@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard Master v7.1 | Aldeia</title>
+    <title>Leaderboard Master v7.2 | Aldeia</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,12 +29,14 @@
         }
         .fade-in { animation: fadeIn 0.6s ease-out forwards; }
 
+        /* Animação de destaque mais forte e longa */
         @keyframes highlight-change {
-            0% { background-color: rgba(56, 189, 248, 0.15); }
+            0% { background-color: rgba(56, 189, 248, 0.25); transform: scale(1.01); }
+            50% { background-color: rgba(56, 189, 248, 0.05); transform: scale(1); }
             100% { background-color: transparent; }
         }
         .highlight-change {
-            animation: highlight-change 1.5s ease-out;
+            animation: highlight-change 2s ease-out;
         }
         
         .chart-container { position: relative; height: 50vh; width: 100%; }
@@ -43,16 +45,24 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 20px; }
         .tab-active { border-color: #38bdf8; color: #38bdf8; background-color: rgba(56, 189, 248, 0.1); }
 
-        .rank-up { color: #22c55e; }
-        .rank-down { color: #ef4444; }
+        /* Indicadores de ranking maiores e com mais destaque */
+        .rank-up, .rank-down, .rank-stable {
+            font-weight: 700;
+            font-size: 1.1rem;
+            width: 1.5rem;
+            text-align: center;
+        }
+        .rank-up { color: #22c55e; text-shadow: 0 0 6px rgba(34, 197, 94, 0.7); }
+        .rank-down { color: #ef4444; text-shadow: 0 0 6px rgba(239, 68, 68, 0.7); }
         .rank-stable { color: #6b7280; }
 
         .team-card-winner {
             border-color: #38bdf8;
             box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
         }
+        /* Cor do botão ativo com melhor contraste */
         .filter-btn-active {
-            background-color: #0ea5e9; /* sky-500 */
+            background-color: #0369a1; /* sky-700 */
             color: #ffffff;
             box-shadow: 0 0 10px rgba(14, 165, 233, 0.4);
         }
@@ -63,7 +73,7 @@
     <div class="container mx-auto p-4 md:p-8">
         
         <header class="text-center mb-10">
-            <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight">Leaderboard Master v7.1</h1>
+            <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight">Leaderboard Master v7.2</h1>
             <p class="text-gray-400 mt-3 text-lg">Centro de Comando da Aldeia</p>
         </header>
 
@@ -129,7 +139,7 @@
         </div>
         
         <footer class="text-center mt-12 text-sm text-gray-600">
-            <p>Leaderboard de Competição v7.1</p>
+            <p>Leaderboard de Competição v7.2</p>
         </footer>
     </div>
 
@@ -137,7 +147,7 @@
     (function() {
         // --- CONFIG ---
         const urlDoWebhookN8N = 'https://aldeia2.app.n8n.cloud/webhook/afe90f44-77d3-4a28-afa6-fb26d616299d';
-        const UPDATE_INTERVAL_SECONDS = 60;
+        const UPDATE_INTERVAL_SECONDS = 30; // Atualizado para 30 segundos
         const TEAMS = {
             'DOLLAR GODS': ['Felipe', 'Natan', 'Allison', 'João', 'Raul', 'Otavio'],
             'ELITE SQUAD': ['Luan', 'Victor', 'G. Dias', 'G. Wagner', 'Ruan', 'Arthur', 'Laurence', 'Davi']
@@ -316,11 +326,11 @@
             teamData.slice(3).forEach((broker, index) => {
                 const rank = index + 4;
                 const prevRank = previousRankings[rankingType] ? previousRankings[rankingType][broker.brokerName] : null;
-                let rankIndicator = '<span class="rank-stable w-5">-</span>';
+                let rankIndicator = '<span class="rank-stable">-</span>';
                 let highlightClass = '';
                 if (prevRank) {
-                    if (rank < prevRank) rankIndicator = '<span class="rank-up w-5">▲</span>';
-                    else if (rank > prevRank) rankIndicator = '<span class="rank-down w-5">▼</span>';
+                    if (rank < prevRank) rankIndicator = '<span class="rank-up">▲</span>';
+                    else if (rank > prevRank) rankIndicator = '<span class="rank-down">▼</span>';
                     if (rank !== prevRank) highlightClass = 'highlight-change';
                 }
 
@@ -388,6 +398,9 @@
             renderTeamRanking(eliteSquadContainer, 'ELITE SQUAD', rankingData, currentRankingType);
             renderAnalysis(filteredData);
             
+            // A animação de subida/descida acontece aqui.
+            // O código compara a nova ordem do ranking com a anterior (salva em 'previousRankings').
+            // Se a posição de um broker for diferente, a linha dele na tabela piscará.
             updatePreviousRankings(rankings);
         }
 
@@ -407,7 +420,7 @@
             });
             
             periodFilterContainer.innerHTML = `
-                <button class="filter-btn filter-btn-active px-4 py-1.5 rounded-lg text-sm font-semibold transition" data-period="all">Geral</button>
+                <button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition text-gray-400 hover:bg-gray-700/50 hover:text-white" data-period="all">Geral</button>
                 <button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition text-gray-400 hover:bg-gray-700/50 hover:text-white" data-period="today">Hoje</button>
                 <button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition text-gray-400 hover:bg-gray-700/50 hover:text-white" data-period="this_week">Esta Semana</button>
             `;
@@ -431,8 +444,18 @@
                 const response = await fetch(urlDoWebhookN8N);
                 if (!response.ok) throw new Error("Network error");
                 const result = await response.json();
-                rawData = (Array.isArray(result) && result[0]?.json) ? result[0].json : result;
-                if (!Array.isArray(rawData)) throw new Error("Invalid data format");
+                const fullRawData = (Array.isArray(result) && result[0]?.json) ? result[0].json : result;
+                if (!Array.isArray(fullRawData)) throw new Error("Invalid data format");
+                
+                // Filtra os dados para incluir apenas a partir de Julho de 2025
+                rawData = fullRawData.filter(item => {
+                    const date = parseDate(getValue(item, 'Data Ativação', 'Data Ativacao'));
+                    if (!date) return false;
+                    const year = date.getFullYear();
+                    const month = date.getMonth(); // 0-indexed, Julho é 6
+                    return year > 2025 || (year === 2025 && month >= 6);
+                });
+
                 updateDisplay();
             } catch (error) {
                 console.error("Failed to fetch data:", error);
@@ -446,11 +469,31 @@
                 const response = await fetch(urlDoWebhookN8N);
                 if (!response.ok) throw new Error("Network error");
                 const result = await response.json();
-                rawData = (Array.isArray(result) && result[0]?.json) ? result[0].json : result;
-                if (!Array.isArray(rawData)) throw new Error("Invalid data format");
+                const fullRawData = (Array.isArray(result) && result[0]?.json) ? result[0].json : result;
+                if (!Array.isArray(fullRawData)) throw new Error("Invalid data format");
+
+                // Filtra os dados para incluir apenas a partir de Julho de 2025
+                rawData = fullRawData.filter(item => {
+                    const date = parseDate(getValue(item, 'Data Ativação', 'Data Ativacao'));
+                    if (!date) return false;
+                    const year = date.getFullYear();
+                    const month = date.getMonth(); // 0-indexed, Julho é 6
+                    return year > 2025 || (year === 2025 && month >= 6);
+                });
 
                 populateMonthFilter(rawData);
-                const rankings = calculateRankings(processData(rawData, 'all'));
+
+                // Define o filtro inicial para o mês de Julho ou o mais recente, se disponível
+                const julyOption = periodFilterContainer.querySelector('[data-period="6_2025"]');
+                if (julyOption) {
+                    currentPeriod = "6_2025";
+                } else {
+                    currentPeriod = "all";
+                }
+                periodFilterContainer.querySelector(`[data-period="${currentPeriod}"]`).classList.add('filter-btn-active');
+
+
+                const rankings = calculateRankings(processData(rawData, currentPeriod));
                 updatePreviousRankings(rankings);
                 updateDisplay();
 
