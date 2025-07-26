@@ -3,105 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard Financeiro | Ranking Aldeia</title>
+    <title>Leaderboard de Competição | Aldeia</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-
-    <!-- Chart.js para os gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #111827; /* bg-gray-900 */
+            background-color: #030712; /* Fundo mais escuro */
+            background-image: radial-gradient(circle at top right, rgba(12, 74, 110, 0.2), transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(13, 148, 136, 0.1), transparent 50%);
+            background-attachment: fixed;
         }
-        .podium-1 { border: 2px solid #FFD700; background: linear-gradient(145deg, #1f2937, #374151); }
-        .podium-2 { border: 2px solid #C0C0C0; background: linear-gradient(145deg, #1f2937, #374151); }
-        .podium-3 { border: 2px solid #CD7F32; background: linear-gradient(145deg, #1f2937, #374151); }
+        .podium-1 { border-color: #FFD700; }
+        .podium-2 { border-color: #C0C0C0; }
+        .podium-3 { border-color: #CD7F32; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .fade-in { animation: fadeIn 0.6s ease-out forwards; }
         .chart-container { position: relative; height: 50vh; width: 100%; }
-        /* Scrollbar customizada para o ranking */
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #1f2937; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 20px; border: 3px solid #1f2937; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 20px; }
+        .tab-active { border-color: #38bdf8; color: #38bdf8; background-color: rgba(56, 189, 248, 0.1); }
     </style>
 </head>
-<body class="text-gray-200">
+<body class="text-gray-300">
 
     <div class="container mx-auto p-4 md:p-8">
         
-        <header class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight">Leaderboard Financeiro</h1>
-            <p class="text-gray-400 mt-3 text-lg">Ranking de performance dos Brokers</p>
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight">Leaderboard da Aldeia</h1>
+            <p class="text-gray-400 mt-3 text-lg">Análise de Performance por Times</p>
         </header>
 
-        <!-- Seção do Ranking -->
-        <div class="bg-gray-800/50 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-700 mb-12 fade-in">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-white">Ranking Aldeia</h2>
-                 <div id="countdown-timer" class="text-sm font-medium text-gray-400"></div>
+        <!-- Filtros e Controles -->
+        <div class="flex justify-between items-center mb-8 fade-in">
+            <div class="flex items-center gap-4">
+                 <label for="month-filter" class="font-semibold text-gray-300">Mês:</label>
+                 <select id="month-filter" class="bg-gray-800 border border-gray-600 text-white rounded-md px-3 py-1.5 focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
+                     <option value="all">Todos os Meses</option>
+                 </select>
             </div>
-            
-            <div id="loader" class="text-center py-20 hidden">
-                 <p class="mt-4 text-gray-400 font-medium text-lg">Analisando dados...</p>
-            </div>
-            
-            <div id="ranking-container">
-                <!-- Pódio (Top 3) -->
-                <div id="podium" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"></div>
-                
-                <!-- Restante do Ranking -->
-                <div id="ranking-list" class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar pr-2"></div>
-            </div>
+            <div id="countdown-timer" class="text-sm font-medium text-gray-500"></div>
+        </div>
 
-            <div id="no-data" class="text-center py-20 text-gray-500 hidden">
-                <p class="mt-4 font-medium text-lg">Nenhum dado para exibir.</p>
+        <!-- Abas para os Rankings -->
+        <div class="mb-8 fade-in" style="animation-delay: 100ms;">
+            <div id="tabs-container" class="flex items-center border-b border-gray-700">
+                <button data-ranking="value" class="tab-btn tab-active px-4 py-2 font-semibold border-b-2 transition-colors">Ranking por Depósito</button>
+                <button data-ranking="activations" class="tab-btn px-4 py-2 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">Ranking por Ativações</button>
+                <button data-ranking="general" class="tab-btn px-4 py-2 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">Ranking Geral</button>
             </div>
         </div>
 
-        <!-- Seção de Análise (Dashboard Antigo) -->
-        <div class="fade-in" style="animation-delay: 200ms;">
-            <div class="mb-4">
-                 <h2 class="text-2xl font-bold text-white">Análise Financeira</h2>
-                 <p class="text-gray-400">Visão macro dos indicadores financeiros.</p>
+        <div id="loader" class="text-center py-20">
+            <p class="mt-4 text-gray-400 font-medium text-lg">Carregando dados da Aldeia...</p>
+        </div>
+        
+        <div id="content-container" class="hidden">
+            <!-- Seção de Rankings por Time -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <!-- Time: DOLLAR GODS -->
+                <div id="team-dollar-gods" class="bg-gray-800/50 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-700"></div>
+                <!-- Time: ELITE SQUAD -->
+                <div id="team-elite-squad" class="bg-gray-800/50 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-700"></div>
             </div>
-            <!-- KPIs -->
-            <div id="kpi-container" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
-                    <h3 class="text-sm font-medium text-gray-400">Depósito Total (Geral)</h3>
-                    <p id="kpi-deposito-total" class="text-3xl font-bold text-blue-400 mt-2">$0.00</p>
+
+            <!-- Seção de Análise Financeira -->
+            <div class="fade-in" style="animation-delay: 400ms;">
+                <div class="mb-4">
+                     <h2 class="text-3xl font-bold text-white">Análise Financeira do Mês</h2>
+                     <p class="text-gray-400">Visão macro dos indicadores financeiros.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
+                        <h3 class="text-sm font-medium text-gray-400">Depósito Total</h3>
+                        <p id="kpi-deposito-total" class="text-3xl font-bold text-blue-400 mt-2">$0.00</p>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
+                        <h3 class="text-sm font-medium text-gray-400">Saldo Total</h3>
+                        <p id="kpi-saldo-total" class="text-3xl font-bold text-green-400 mt-2">$0.00</p>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
+                        <h3 class="text-sm font-medium text-gray-400">Bônus Total</h3>
+                        <p id="kpi-bonus-total" class="text-3xl font-bold text-orange-400 mt-2">$0.00</p>
+                    </div>
                 </div>
                 <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
-                    <h3 class="text-sm font-medium text-gray-400">Saldo Total (Geral)</h3>
-                    <p id="kpi-saldo-total" class="text-3xl font-bold text-green-400 mt-2">$0.00</p>
+                     <h3 class="text-lg font-semibold text-white mb-4">Depósito vs. Capital Líquido (Mês)</h3>
+                     <div class="chart-container">
+                        <canvas id="mainChart"></canvas>
+                     </div>
                 </div>
-                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
-                    <h3 class="text-sm font-medium text-gray-400">Bônus Total (Geral)</h3>
-                    <p id="kpi-bonus-total" class="text-3xl font-bold text-orange-400 mt-2">$0.00</p>
-                </div>
-            </div>
-            <!-- Gráfico -->
-            <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
-                 <h3 class="text-lg font-semibold text-white mb-4">Depósito vs. Capital Líquido por Broker</h3>
-                 <div class="chart-container">
-                    <canvas id="mainChart"></canvas>
-                 </div>
             </div>
         </div>
         
-        <footer class="text-center mt-12 text-sm text-gray-500">
-            <p>Leaderboard Financeiro v5.1 | Atualização Automática</p>
+        <footer class="text-center mt-12 text-sm text-gray-600">
+            <p>Leaderboard de Competição v6.0</p>
         </footer>
     </div>
 
@@ -109,30 +114,70 @@
     (function() {
         // --- CONFIGURAÇÃO ---
         const urlDoWebhookN8N = 'https://aldeia2.app.n8n.cloud/webhook/afe90f44-77d3-4a28-afa6-fb26d616299d';
-        const UPDATE_INTERVAL_SECONDS = 30;
+        const UPDATE_INTERVAL_SECONDS = 60;
+        const TEAMS = {
+            'DOLLAR GODS': ['Felipe', 'Natan', 'Allison', 'João', 'Raul', 'Otavio'],
+            'ELITE SQUAD': ['Luan', 'Victor', 'G. Dias', 'G. Wagner', 'Ruan', 'Arthur', 'Laurence', 'Davi']
+        };
 
-        // --- ELEMENTOS DO DOM ---
-        const countdownTimerDiv = document.getElementById('countdown-timer');
+        const BROKER_MAP = {
+            'Felipe Enos': 'Felipe',
+            'João Lucas': 'João',
+            'Gabriel Dias': 'G. Dias',
+            'Gabriel Wagner': 'G. Wagner',
+            'Luan Felipe': 'Luan',
+            'Victor Renan': 'Victor',
+            'Ruan Neuberger': 'Ruan',
+            'Arthur De Oliveira': 'Arthur',
+            'Laurence Dias': 'Laurence',
+            'Davi Dias do Nascimento': 'Davi',
+            'Allison Moreira': 'Allison',
+            'Otavio': 'Otavio',
+            'Raul': 'Raul',
+            'Natan': 'Natan'
+        };
+
+        let rawData = [];
+        let mainChartInstance = null;
+        let countdownInterval;
+        let currentRankingType = 'value';
+        
+        const podiumIcons = {
+            1: `<svg ...>...</svg>`, // SVG icons kept short for brevity
+            2: `<svg ...>...</svg>`,
+            3: `<svg ...>...</svg>`
+        };
+
+        // --- DOM ELEMENTS ---
         const loaderDiv = document.getElementById('loader');
-        const noDataDiv = document.getElementById('no-data');
+        const contentContainer = document.getElementById('content-container');
+        const monthFilter = document.getElementById('month-filter');
+        const tabsContainer = document.getElementById('tabs-container');
+        const dollarGodsContainer = document.getElementById('team-dollar-gods');
+        const eliteSquadContainer = document.getElementById('team-elite-squad');
+        const countdownTimerDiv = document.getElementById('countdown-timer');
         const kpiDeposito = document.getElementById('kpi-deposito-total');
         const kpiSaldo = document.getElementById('kpi-saldo-total');
         const kpiBonus = document.getElementById('kpi-bonus-total');
         const chartCanvas = document.getElementById('mainChart');
-        const podiumContainer = document.getElementById('podium');
-        const rankingListContainer = document.getElementById('ranking-list');
-        const rankingContainer = document.getElementById('ranking-container');
-        let mainChartInstance = null;
-        let countdownInterval;
-        
-        // Ícones para o pódio
-        const podiumIcons = {
-            1: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l2.5 5.5L20 12l-5.5 2.5L12 20l-2.5-5.5L4 12l5.5-2.5z M4.5 17.5l1 2 M18.5 17.5l-1 2 M12 4v0 M12 20v0 M20 7l-2 1 M4 7l2 1"/></svg>`,
-            2: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C0C0C0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.47 13.03l-1.94.48a1.5 1.5 0 01-1.8-1.8l.48-1.94a1.5 1.5 0 012.22-1.03l3.53 1.76a1.5 1.5 0 010 2.6l-3.53 1.76a1.5 1.5 0 01-2.22-1.03z M8.53 10.97l1.94-.48a1.5 1.5 0 011.8 1.8l-.48 1.94a1.5 1.5 0 01-2.22 1.03l-3.53-1.76a1.5 1.5 0 010-2.6l3.53-1.76a1.5 1.5 0 012.22 1.03z"/></svg>`,
-            3: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#CD7F32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.82 17.82a4 4 0 11-5.66-5.66 4 4 0 115.66 5.66z M11.12 11.12l1.83-1.83 M4.93 4.93l1.83 1.83 M2.05 12l1.83 1.83 M18.34 2.05l-1.83 1.83 M12 2.05l-1.83 1.83"/></svg>`
-        };
 
-        // --- FUNÇÕES DE PROCESSAMENTO ---
+
+        // --- DATA PARSING & PROCESSING ---
+        function getTeamByBroker(brokerName) {
+            const shortName = BROKER_MAP[brokerName] || brokerName;
+            for (const team in TEAMS) {
+                if (TEAMS[team].includes(shortName)) return team;
+            }
+            return 'Sem Time';
+        }
+
+        function parseDate(dateStr) {
+            if (!dateStr || typeof dateStr !== 'string') return null;
+            const parts = dateStr.split('/');
+            if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
+            return null;
+        }
+
         function getValue(item, ...keys) {
             for (const key of keys) {
                 if (item[key] !== undefined && item[key] !== null) return item[key];
@@ -143,8 +188,7 @@
         function parseCurrency(value) {
             if (typeof value === 'number') return value;
             if (typeof value === 'string' && value.trim() !== '') {
-                const cleanedValue = value.replace(/[^\d.,-]/g, '').replace(/\./g, '').replace(',', '.');
-                return parseFloat(cleanedValue) || 0;
+                return parseFloat(value.replace(/[^\d.,-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
             }
             return 0;
         }
@@ -152,163 +196,233 @@
         function formatCurrency(value) {
             return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
         }
-        
-        // Função específica para o ranking por contagem de depósitos
-        function rankBrokersByDepositCount(data) {
-            if (!data || data.length === 0) return [];
-             const summary = data.reduce((acc, item) => {
-                const broker = getValue(item, 'Broker') || 'Não Identificado';
-                if (!acc[broker]) {
-                    acc[broker] = { brokerName: broker, depositCount: 0 };
-                }
-                acc[broker].depositCount++;
-                return acc;
-            }, {});
-            return Object.values(summary).sort((a, b) => b.depositCount - a.depositCount);
+
+        function processData(data, selectedMonth) {
+            return data.map(item => ({
+                ...item,
+                parsedDate: parseDate(getValue(item, 'Data Ativação', 'Data Ativacao')),
+                team: getTeamByBroker(getValue(item, 'Broker'))
+            })).filter(item => {
+                if (selectedMonth === 'all' || !item.parsedDate) return true;
+                const monthYear = `${item.parsedDate.getMonth()}_${item.parsedDate.getFullYear()}`;
+                return monthYear === selectedMonth;
+            });
         }
 
-        function calculateGeneralKPIs(data) {
-            if (!data || data.length === 0) return { totalDeposito: 0, totalSaldo: 0, totalBonus: 0 };
-            const totalDeposito = data.reduce((sum, item) => sum + parseCurrency(getValue(item, 'Depósito', 'Deposito')), 0);
-            const totalSaldo = data.reduce((sum, item) => sum + parseCurrency(getValue(item, 'Saldo')), 0);
-            const totalBonus = data.reduce((sum, item) => sum + parseCurrency(getValue(item, 'Bônus', 'Bonus')), 0);
-            return { totalDeposito, totalSaldo, totalBonus };
-        }
-
-        // Função para o gráfico, baseada em valores financeiros
-        function summarizeFinancialsByBroker(data) {
-            if (!data || data.length === 0) return [];
+        // --- RANKING CALCULATIONS ---
+        function calculateRankings(data) {
             const summary = data.reduce((acc, item) => {
-                const broker = getValue(item, 'Broker') || 'Não Identificado';
-                if (!acc[broker]) {
-                    acc[broker] = { brokerName: broker, totalDeposito: 0, totalCapitalLiquido: 0 };
+                const shortName = BROKER_MAP[getValue(item, 'Broker')] || getValue(item, 'Broker');
+                if (!shortName) return acc;
+                
+                if (!acc[shortName]) {
+                    acc[shortName] = {
+                        brokerName: shortName,
+                        team: item.team,
+                        totalDeposito: 0,
+                        activationCount: 0,
+                    };
                 }
-                acc[broker].totalDeposito += parseCurrency(getValue(item, 'Depósito', 'Deposito'));
-                acc[broker].totalCapitalLiquido += parseCurrency(getValue(item, 'Capital Líquido', 'Capital_Líquido', 'CapitalLiquido', 'Capital Liquido'));
+                
+                acc[shortName].totalDeposito += parseCurrency(getValue(item, 'Depósito', 'Deposito'));
+                const ativacao = getValue(item, 'Ativação', 'Ativacao');
+                if (['Ativação', 'Validado', 'Sim'].includes(ativacao)) {
+                     acc[shortName].activationCount++;
+                }
+
                 return acc;
             }, {});
-            // Ordena por capital líquido para consistência no gráfico
-            return Object.values(summary).sort((a, b) => b.totalCapitalLiquido - a.totalCapitalLiquido);
-        }
 
-        // --- FUNÇÕES DE RENDERIZAÇÃO ---
-        function renderKPIs({ totalDeposito, totalSaldo, totalBonus }) {
-            kpiDeposito.textContent = formatCurrency(totalDeposito);
-            kpiSaldo.textContent = formatCurrency(totalSaldo);
-            kpiBonus.textContent = formatCurrency(totalBonus);
-        }
+            const allBrokers = Object.values(summary);
 
-        function renderRanking(sortedRanking) {
-            podiumContainer.innerHTML = '';
-            rankingListContainer.innerHTML = '';
+            const valueRanking = [...allBrokers].sort((a, b) => b.totalDeposito - a.totalDeposito);
+            const activationRanking = [...allBrokers].sort((a, b) => b.activationCount - a.activationCount);
             
-            sortedRanking.slice(0, 3).forEach((broker, index) => {
+            // General Ranking Score Calculation
+            const maxDeposito = Math.max(...valueRanking.map(b => b.totalDeposito), 1);
+            const maxActivations = Math.max(...activationRanking.map(b => b.activationCount), 1);
+
+            allBrokers.forEach(broker => {
+                const valueScore = (broker.totalDeposito / maxDeposito) * 50;
+                const activationScore = (broker.activationCount / maxActivations) * 50;
+                broker.generalScore = valueScore + activationScore;
+            });
+            
+            const generalRanking = allBrokers.sort((a, b) => b.generalScore - a.generalScore);
+            
+            return { valueRanking, activationRanking, generalRanking };
+        }
+
+
+        // --- RENDER FUNCTIONS ---
+        function renderTeamRanking(container, teamName, rankingData, rankingType) {
+            const teamData = rankingData.filter(b => b.team === teamName);
+            let contentHTML = `<h3 class="text-2xl font-bold text-white mb-6">${teamName}</h3>`;
+
+            if (teamData.length === 0) {
+                contentHTML += `<p class="text-gray-500 text-center py-10">Nenhum dado para este time.</p>`;
+                container.innerHTML = contentHTML;
+                return;
+            }
+            
+            // Podium
+            let podiumHTML = '<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">';
+            teamData.slice(0, 3).forEach((broker, index) => {
                 const rank = index + 1;
-                const podiumHTML = `
-                    <div class="podium-${rank} p-5 rounded-lg text-center transform hover:scale-105 transition-transform duration-300">
-                        <div class="flex items-center justify-center gap-3">
-                            ${podiumIcons[rank]}
-                            <span class="text-2xl font-bold">${rank}º</span>
-                        </div>
-                        <p class="text-lg font-semibold mt-3 truncate text-white">${broker.brokerName}</p>
-                        <p class="text-xl font-bold text-gray-300">${broker.depositCount} Depósitos</p>
-                    </div>
-                `;
-                podiumContainer.innerHTML += podiumHTML;
-            });
+                let valueText = '';
+                if(rankingType === 'value') valueText = formatCurrency(broker.totalDeposito);
+                else if(rankingType === 'activations') valueText = `${broker.activationCount} Ativações`;
+                else valueText = `${broker.generalScore.toFixed(2)} Pontos`;
 
-            sortedRanking.slice(3).forEach((broker, index) => {
-                const rank = index + 4;
-                const listHTML = `
-                    <div class="flex items-center bg-gray-900/50 p-3 rounded-md border border-transparent hover:border-gray-600 transition-colors">
-                        <span class="text-sm font-bold text-gray-400 w-12 text-center">${rank}º</span>
-                        <span class="font-semibold text-gray-200 flex-1 truncate">${broker.brokerName}</span>
-                        <span class="text-sm font-bold text-gray-300">${broker.depositCount} Depósitos</span>
-                    </div>
-                `;
-                rankingListContainer.innerHTML += listHTML;
+                podiumHTML += `
+                    <div class="podium-${rank} p-4 rounded-lg text-center border-2 transform hover:scale-105 transition-transform duration-300">
+                        <div class="flex items-center justify-center gap-2">
+                           <span class="text-xl font-bold">${rank}º</span>
+                        </div>
+                        <p class="text-md font-semibold mt-2 truncate text-white">${broker.brokerName}</p>
+                        <p class="text-lg font-bold text-gray-300">${valueText}</p>
+                    </div>`;
             });
+            podiumHTML += '</div>';
+            
+            // List
+            let listHTML = '<div class="space-y-2 max-h-72 overflow-y-auto custom-scrollbar pr-2">';
+            teamData.slice(3).forEach((broker, index) => {
+                const rank = index + 4;
+                 let valueText = '';
+                if(rankingType === 'value') valueText = formatCurrency(broker.totalDeposito);
+                else if(rankingType === 'activations') valueText = `${broker.activationCount} Ativações`;
+                else valueText = `${broker.generalScore.toFixed(2)} Pontos`;
+
+                listHTML += `
+                    <div class="flex items-center bg-gray-900/50 p-3 rounded-md">
+                        <span class="text-sm font-bold text-gray-500 w-10 text-center">${rank}º</span>
+                        <span class="font-semibold text-gray-300 flex-1 truncate">${broker.brokerName}</span>
+                        <span class="text-sm font-semibold text-gray-400">${valueText}</span>
+                    </div>`;
+            });
+            listHTML += '</div>';
+
+            container.innerHTML = contentHTML + podiumHTML + listHTML;
         }
 
-        function renderChart(financialSummary) {
+        function renderKPIsAndChart(data) {
+            // KPIs
+            const totals = data.reduce((acc, item) => {
+                acc.deposito += parseCurrency(getValue(item, 'Depósito', 'Deposito'));
+                acc.saldo += parseCurrency(getValue(item, 'Saldo'));
+                acc.bonus += parseCurrency(getValue(item, 'Bônus', 'Bonus'));
+                return acc;
+            }, { deposito: 0, saldo: 0, bonus: 0 });
+            kpiDeposito.textContent = formatCurrency(totals.deposito);
+            kpiSaldo.textContent = formatCurrency(totals.saldo);
+            kpiBonus.textContent = formatCurrency(totals.bonus);
+
+            // Chart
+            const summary = data.reduce((acc, item) => {
+                const shortName = BROKER_MAP[getValue(item, 'Broker')] || getValue(item, 'Broker');
+                if(!acc[shortName]) acc[shortName] = { brokerName: shortName, totalDeposito: 0, totalCapitalLiquido: 0 };
+                acc[shortName].totalDeposito += parseCurrency(getValue(item, 'Depósito', 'Deposito'));
+                acc[shortName].totalCapitalLiquido += parseCurrency(getValue(item, 'Capital Líquido', 'Capital_Líquido', 'CapitalLiquido', 'Capital Liquido'));
+                return acc;
+            }, {});
+            const chartData = Object.values(summary).sort((a,b) => b.totalCapitalLiquido - a.totalCapitalLiquido);
+
             if (mainChartInstance) mainChartInstance.destroy();
-            
             Chart.defaults.color = '#9ca3af';
             Chart.defaults.borderColor = '#374151';
-
-            const labels = financialSummary.map(item => item.brokerName);
-            const depositoData = financialSummary.map(item => item.totalDeposito);
-            const capitalLiquidoData = financialSummary.map(item => item.totalCapitalLiquido);
-
             mainChartInstance = new Chart(chartCanvas, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: chartData.map(d => d.brokerName),
                     datasets: [
-                        { label: 'Depósito Total', data: depositoData, backgroundColor: 'rgba(96, 165, 250, 0.5)', borderColor: 'rgba(96, 165, 250, 1)', borderWidth: 1, borderRadius: 4 },
-                        { label: 'Capital Líquido Total', data: capitalLiquidoData, backgroundColor: 'rgba(52, 211, 153, 0.5)', borderColor: 'rgba(52, 211, 153, 1)', borderWidth: 1, borderRadius: 4 }
+                        { label: 'Depósito Total', data: chartData.map(d => d.totalDeposito), backgroundColor: 'rgba(96, 165, 250, 0.5)', borderRadius: 4 },
+                        { label: 'Capital Líquido', data: chartData.map(d => d.totalCapitalLiquido), backgroundColor: 'rgba(52, 211, 153, 0.5)', borderRadius: 4 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, ticks: { callback: value => formatCurrency(value) } } },
-                    plugins: {
-                        legend: { labels: { color: '#d1d5db' } },
-                        tooltip: { 
-                            backgroundColor: '#1f2937', titleColor: '#fff', bodyColor: '#fff',
-                            callbacks: { label: context => `${context.dataset.label}: ${formatCurrency(context.parsed.y)}` } 
-                        }
-                    }
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { callback: v => formatCurrency(v) }}},
+                    plugins: { tooltip: { callbacks: { label: c => `${c.dataset.label}: ${formatCurrency(c.parsed.y)}`}}}
                 }
             });
         }
+        
+        function updateDisplay() {
+            const selectedMonth = monthFilter.value;
+            const filteredData = processData(rawData, selectedMonth);
+            
+            const { valueRanking, activationRanking, generalRanking } = calculateRankings(filteredData);
+            
+            let rankingData;
+            if (currentRankingType === 'value') rankingData = valueRanking;
+            else if (currentRankingType === 'activations') rankingData = activationRanking;
+            else rankingData = generalRanking;
 
-        function startCountdown() {
-            let secondsLeft = UPDATE_INTERVAL_SECONDS;
-            clearInterval(countdownInterval);
-            countdownInterval = setInterval(() => {
-                secondsLeft--;
-                countdownTimerDiv.textContent = `Atualiza em ${secondsLeft}s...`;
-                if (secondsLeft <= 0) clearInterval(countdownInterval);
-            }, 1000);
+            renderTeamRanking(dollarGodsContainer, 'DOLLAR GODS', rankingData, currentRankingType);
+            renderTeamRanking(eliteSquadContainer, 'ELITE SQUAD', rankingData, currentRankingType);
+            
+            renderKPIsAndChart(filteredData);
         }
 
-        async function fetchData() {
-            startCountdown();
-            loaderDiv.classList.remove('hidden');
-            rankingContainer.classList.add('hidden');
-            noDataDiv.classList.add('hidden');
+        function populateMonthFilter(data) {
+            const months = new Set();
+            data.forEach(item => {
+                const date = parseDate(getValue(item, 'Data Ativação', 'Data Ativacao'));
+                if (date) {
+                    const monthYear = `${date.getMonth()}_${date.getFullYear()}`;
+                    const monthName = date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+                    months.add(JSON.stringify({ value: monthYear, text: monthName.charAt(0).toUpperCase() + monthName.slice(1) }));
+                }
+            });
 
+            const sortedMonths = Array.from(months)
+                .map(m => JSON.parse(m))
+                .sort((a, b) => {
+                    const [aMonth, aYear] = a.value.split('_');
+                    const [bMonth, bYear] = b.value.split('_');
+                    return (bYear - aYear) || (bMonth - aMonth);
+                });
+
+            monthFilter.innerHTML = '<option value="all">Todos os Meses</option>';
+            sortedMonths.forEach(m => {
+                monthFilter.innerHTML += `<option value="${m.value}">${m.text}</option>`;
+            });
+        }
+        
+        // --- MAIN LOGIC & EVENT LISTENERS ---
+        async function initialLoad() {
             try {
                 const response = await fetch(urlDoWebhookN8N);
-                if (!response.ok) throw new Error(`Erro de rede: ${response.status}`);
+                if (!response.ok) throw new Error(`Network response was not ok: ${response.status}`);
                 const result = await response.json();
-                let rawData = (Array.isArray(result) && result[0]?.json) ? result[0].json : result;
-                if (!Array.isArray(rawData) || rawData.length === 0) throw new Error("Nenhum dado válido recebido.");
-                
-                // Processa dados para cada seção
-                const generalKPIs = calculateGeneralKPIs(rawData);
-                const brokerRanking = rankBrokersByDepositCount(rawData);
-                const financialSummary = summarizeFinancialsByBroker(rawData);
-                
-                // Renderiza cada seção com seus respectivos dados
-                renderKPIs(generalKPIs);
-                renderRanking(brokerRanking);
-                renderChart(financialSummary);
+                rawData = (Array.isArray(result) && result[0]?.json) ? result[0].json : result;
+                if (!Array.isArray(rawData)) throw new Error("Invalid data format from API");
 
-                rankingContainer.classList.remove('hidden');
-            } catch (error) {
-                console.error('Falha ao buscar dados:', error);
-                noDataDiv.classList.remove('hidden');
-                renderKPIs({ totalDeposito: 0, totalSaldo: 0, totalBonus: 0 });
-            } finally {
+                populateMonthFilter(rawData);
+                updateDisplay();
+
                 loaderDiv.classList.add('hidden');
+                contentContainer.classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Failed to load initial data:", error);
+                loaderDiv.innerHTML = `<p class="text-red-400">Falha ao carregar dados. Verifique a conexão e o webhook.</p>`;
             }
         }
         
-        fetchData();
-        setInterval(fetchData, UPDATE_INTERVAL_SECONDS * 1000);
+        monthFilter.addEventListener('change', updateDisplay);
+        
+        tabsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab-btn')) {
+                tabsContainer.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('tab-active'));
+                e.target.classList.add('tab-active');
+                currentRankingType = e.target.dataset.ranking;
+                updateDisplay();
+            }
+        });
+        
+        initialLoad();
     })();
     </script>
 </body>
