@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard Vision Pro v8.0 | Aldeia</title>
+    <title>Leaderboard Vision Pro v8.1 | Aldeia</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -149,15 +149,15 @@
         </div>
         
         <footer class="text-center mt-16 text-sm text-gray-600">
-            <p>Leaderboard Vision Pro v8.0</p>
+            <p>Leaderboard Vision Pro v8.1</p>
         </footer>
     </div>
 
     <script>
     (function() {
         // --- CONFIG ---
-        const urlDoWebhookN8N = 'https://aldeia2.app.n8n.cloud/webhook/afe90f44-77d3-4a28-afa6-fb26d616299d';
-        const UPDATE_INTERVAL_SECONDS = 30;
+        const urlDoWebhookN8N = 'https://aldeia2930.app.n8n.cloud/webhook/afe90f44-77d3-4a28-afa6-fb26d616299d';
+        const UPDATE_INTERVAL_SECONDS = 1800; // 30 minutos
         const TEAMS = {
             'DOLLAR GODS': ['Felipe', 'Natan', 'Allison', 'João', 'Raul', 'Otavio'],
             'ELITE SQUAD': ['Luan', 'Victor', 'G. Dias', 'G. Wagner', 'Ruan', 'Arthur', 'Laurence', 'Davi']
@@ -437,9 +437,21 @@
             let secondsLeft = UPDATE_INTERVAL_SECONDS;
             clearInterval(countdownInterval);
             const updateTimer = () => {
-                countdownTimerDiv.textContent = `Próxima atualização em ${secondsLeft}s...`;
-                if(secondsLeft < 0) secondsLeft = UPDATE_INTERVAL_SECONDS;
-                secondsLeft--;
+                if (secondsLeft >= 0) {
+                    const minutes = Math.floor(secondsLeft / 60);
+                    const seconds = secondsLeft % 60;
+                    
+                    let timeString = "Próxima atualização em ";
+                    if (minutes > 0) {
+                        timeString += `${minutes}min `;
+                    }
+                    timeString += `${seconds.toString().padStart(2, '0')}s...`;
+                    
+                    countdownTimerDiv.textContent = timeString;
+                    secondsLeft--;
+                } else {
+                    countdownTimerDiv.textContent = "Atualizando...";
+                }
             };
             updateTimer();
             countdownInterval = setInterval(updateTimer, 1000);
