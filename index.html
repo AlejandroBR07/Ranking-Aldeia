@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard Master v7.2 | Aldeia</title>
+    <title>Leaderboard Vision Pro v8.0 | Aldeia</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,71 +15,81 @@
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #030712;
-            background-image: radial-gradient(circle at top right, rgba(12, 74, 110, 0.2), transparent 40%),
-                              radial-gradient(circle at bottom left, rgba(13, 148, 136, 0.1), transparent 50%);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(14, 165, 233, 0.1), transparent 30%),
+                radial-gradient(circle at 90% 80%, rgba(13, 148, 136, 0.1), transparent 30%);
             background-attachment: fixed;
         }
-        .podium-1 { border-color: #FFD700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.35); }
-        .podium-2 { border-color: #C0C0C0; box-shadow: 0 0 15px rgba(192, 192, 192, 0.2); }
-        .podium-3 { border-color: #CD7F32; box-shadow: 0 0 15px rgba(205, 127, 50, 0.2); }
+
+        .glass-panel {
+            background-color: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .podium-1 { border-color: #FFD700; box-shadow: 0 0 25px rgba(255, 215, 0, 0.4), inset 0 0 10px rgba(255, 215, 0, 0.2); }
+        .podium-2 { border-color: #C0C0C0; box-shadow: 0 0 20px rgba(192, 192, 192, 0.3), inset 0 0 10px rgba(192, 192, 192, 0.2); }
+        .podium-3 { border-color: #CD7F32; box-shadow: 0 0 20px rgba(205, 127, 50, 0.3), inset 0 0 10px rgba(205, 127, 50, 0.2); }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+        .fade-in { 
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards; 
+        }
 
-        /* Animação de destaque mais forte e longa */
         @keyframes highlight-change {
-            0% { background-color: rgba(56, 189, 248, 0.25); transform: scale(1.01); }
-            50% { background-color: rgba(56, 189, 248, 0.05); transform: scale(1); }
-            100% { background-color: transparent; }
+            0% { background-color: rgba(56, 189, 248, 0.3); transform: scale(1.02); }
+            100% { background-color: transparent; transform: scale(1); }
         }
         .highlight-change {
-            animation: highlight-change 2s ease-out;
+            animation: highlight-change 1.8s ease-out;
         }
         
-        .chart-container { position: relative; height: 50vh; width: 100%; }
+        .chart-container { position: relative; height: 45vh; width: 100%; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 20px; }
-        .tab-active { border-color: #38bdf8; color: #38bdf8; background-color: rgba(56, 189, 248, 0.1); }
+        .tab-active { 
+            color: #0ea5e9; 
+            background-color: rgba(14, 165, 233, 0.1);
+            border-image: linear-gradient(to top, #0ea5e9, transparent) 1;
+        }
 
-        /* Indicadores de ranking maiores e com mais destaque */
         .rank-up, .rank-down, .rank-stable {
-            font-weight: 700;
-            font-size: 1.1rem;
-            width: 1.5rem;
-            text-align: center;
+            font-weight: 700; font-size: 1.1rem; width: 1.5rem; text-align: center;
         }
         .rank-up { color: #22c55e; text-shadow: 0 0 6px rgba(34, 197, 94, 0.7); }
         .rank-down { color: #ef4444; text-shadow: 0 0 6px rgba(239, 68, 68, 0.7); }
         .rank-stable { color: #6b7280; }
 
         .team-card-winner {
-            border-color: #38bdf8;
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+            border-color: #0ea5e9;
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(14, 165, 233, 0.3);
         }
-        /* Cor do botão ativo com melhor contraste */
         .filter-btn-active {
-            background-color: #0369a1; /* sky-700 */
+            background-color: #0ea5e9;
             color: #ffffff;
-            box-shadow: 0 0 10px rgba(14, 165, 233, 0.4);
+            box-shadow: 0 0 12px rgba(14, 165, 233, 0.5);
         }
     </style>
 </head>
 <body class="text-gray-300">
 
-    <div class="container mx-auto p-4 md:p-8">
+    <div class="container mx-auto p-4 md:p-6 lg:p-8">
         
-        <header class="text-center mb-10">
-            <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight">Leaderboard Master v7.2</h1>
+        <header class="text-center mb-10 fade-in">
+            <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight">Leaderboard Vision Pro</h1>
             <p class="text-gray-400 mt-3 text-lg">Centro de Comando da Aldeia</p>
         </header>
 
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 fade-in gap-4">
-            <div id="period-filter-container" class="flex flex-wrap items-center justify-center gap-2 bg-gray-800/50 p-2 rounded-xl border border-gray-700">
-                <!-- Botões de filtro serão injetados aqui pelo JS -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 fade-in gap-4" style="animation-delay: 100ms;">
+            <div id="period-filter-container" class="flex flex-wrap items-center justify-center gap-2 glass-panel p-2 rounded-xl">
+                <!-- Botões de filtro -->
             </div>
             <div id="countdown-timer" class="text-sm font-medium text-gray-500 flex-shrink-0"></div>
         </div>
@@ -89,47 +99,47 @@
         </div>
         
         <div id="content-container" class="hidden">
-            <div class="mb-12 fade-in" style="animation-delay: 100ms;">
+            <div class="mb-12 fade-in" style="animation-delay: 200ms;">
                 <h2 class="text-3xl font-bold text-white text-center mb-6">Competição de Times</h2>
                 <div id="team-competition-summary" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Cards dos times serão inseridos aqui -->
+                    <!-- Cards dos times -->
                 </div>
             </div>
 
-            <div class="mb-8 fade-in" style="animation-delay: 200ms;">
-                <div id="tabs-container" class="flex items-center border-b border-gray-700">
-                    <button data-ranking="value" class="tab-btn tab-active px-4 py-2 font-semibold border-b-2 transition-colors">Ranking por Depósito</button>
-                    <button data-ranking="activation" class="tab-btn px-4 py-2 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">Ranking por Ativações</button>
-                    <button data-ranking="general" class="tab-btn px-4 py-2 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">Ranking Geral</button>
+            <div class="mb-8 fade-in" style="animation-delay: 300ms;">
+                <div id="tabs-container" class="flex items-center border-b-2 border-gray-800">
+                    <button data-ranking="value" class="tab-btn tab-active px-5 py-3 font-semibold border-b-2 transition-colors duration-300">Ranking por Depósito</button>
+                    <button data-ranking="activation" class="tab-btn px-5 py-3 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors duration-300">Ranking por Ativações</button>
+                    <button data-ranking="general" class="tab-btn px-5 py-3 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors duration-300">Ranking Geral</button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12 fade-in" style="animation-delay: 300ms;">
-                <div id="team-dollar-gods" class="bg-gray-800/50 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-700"></div>
-                <div id="team-elite-squad" class="bg-gray-800/50 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-700"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12 fade-in" style="animation-delay: 400ms;">
+                <div id="team-dollar-gods" class="glass-panel p-6 rounded-2xl"></div>
+                <div id="team-elite-squad" class="glass-panel p-6 rounded-2xl"></div>
             </div>
 
-            <div class="fade-in" style="animation-delay: 400ms;">
+            <div class="fade-in" style="animation-delay: 500ms;">
                 <div class="mb-4">
                      <h2 class="text-3xl font-bold text-white">Análise Financeira</h2>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 flex items-center gap-4">
-                        <div class="bg-blue-500/10 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg></div>
+                    <div class="glass-panel p-6 rounded-2xl flex items-center gap-4">
+                        <div class="bg-blue-500/10 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg></div>
                         <div>
                             <h3 class="text-sm font-medium text-gray-400">Depósito Total (Período)</h3>
                             <p id="kpi-deposito-total" class="text-3xl font-bold text-blue-400 mt-1">$0.00</p>
                         </div>
                     </div>
-                    <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 flex items-center gap-4">
-                        <div class="bg-teal-500/10 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-teal-400"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                    <div class="glass-panel p-6 rounded-2xl flex items-center gap-4">
+                        <div class="bg-teal-500/10 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-teal-400"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                         <div>
                             <h3 class="text-sm font-medium text-gray-400">Total de Ativações (Período)</h3>
                             <p id="kpi-ativacoes-total" class="text-3xl font-bold text-teal-400 mt-1">0</p>
                         </div>
                     </div>
                 </div>
-                <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
+                <div class="glass-panel p-6 rounded-2xl">
                      <h3 class="text-lg font-semibold text-white mb-4">Depósito vs. Capital Líquido (Período)</h3>
                      <div class="chart-container">
                         <canvas id="mainChart"></canvas>
@@ -138,8 +148,8 @@
             </div>
         </div>
         
-        <footer class="text-center mt-12 text-sm text-gray-600">
-            <p>Leaderboard de Competição v7.2</p>
+        <footer class="text-center mt-16 text-sm text-gray-600">
+            <p>Leaderboard Vision Pro v8.0</p>
         </footer>
     </div>
 
@@ -147,7 +157,7 @@
     (function() {
         // --- CONFIG ---
         const urlDoWebhookN8N = 'https://aldeia2.app.n8n.cloud/webhook/afe90f44-77d3-4a28-afa6-fb26d616299d';
-        const UPDATE_INTERVAL_SECONDS = 30; // Atualizado para 30 segundos
+        const UPDATE_INTERVAL_SECONDS = 30;
         const TEAMS = {
             'DOLLAR GODS': ['Felipe', 'Natan', 'Allison', 'João', 'Raul', 'Otavio'],
             'ELITE SQUAD': ['Luan', 'Victor', 'G. Dias', 'G. Wagner', 'Ruan', 'Arthur', 'Laurence', 'Davi']
@@ -207,7 +217,7 @@
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const startOfWeek = new Date(today);
-            startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)); // Adjust for week starting on Monday
+            startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
 
             return data.map(item => ({
                 ...item,
@@ -281,14 +291,14 @@
             const winner = dg.totalDeposito > es.totalDeposito ? 'DOLLAR GODS' : (es.totalDeposito > dg.totalDeposito ? 'ELITE SQUAD' : null);
 
             teamCompetitionSummary.innerHTML = `
-                <div class="team-card bg-gray-800/50 p-6 rounded-2xl border-2 border-gray-700 transition-all duration-500 ${winner === 'DOLLAR GODS' ? 'team-card-winner' : ''}">
+                <div class="team-card glass-panel p-6 rounded-2xl transition-all duration-500 ${winner === 'DOLLAR GODS' ? 'team-card-winner' : ''}">
                     <h3 class="text-2xl font-bold text-white">DOLLAR GODS</h3>
                     <div class="mt-4 space-y-3">
                         <p class="text-lg"><span class="font-semibold text-gray-400">Depósito Total:</span> <span class="font-bold text-blue-400 text-xl">${formatCurrency(dg.totalDeposito)}</span></p>
                         <p class="text-lg"><span class="font-semibold text-gray-400">Ativações:</span> <span class="font-bold text-teal-400 text-xl">${dg.activationCount}</span></p>
                     </div>
                 </div>
-                <div class="team-card bg-gray-800/50 p-6 rounded-2xl border-2 border-gray-700 transition-all duration-500 ${winner === 'ELITE SQUAD' ? 'team-card-winner' : ''}">
+                <div class="team-card glass-panel p-6 rounded-2xl transition-all duration-500 ${winner === 'ELITE SQUAD' ? 'team-card-winner' : ''}">
                     <h3 class="text-2xl font-bold text-white">ELITE SQUAD</h3>
                     <div class="mt-4 space-y-3">
                         <p class="text-lg"><span class="font-semibold text-gray-400">Depósito Total:</span> <span class="font-bold text-blue-400 text-xl">${formatCurrency(es.totalDeposito)}</span></p>
@@ -314,7 +324,7 @@
                                 (rankingType === 'activation') ? `${broker.activationCount} Ativações` :
                                 `${broker.generalScore.toFixed(2)} Pontos`;
 
-                podiumHTML += `<div class="podium-${rank} p-4 rounded-lg text-center border-2 transform hover:scale-105 transition-transform duration-300">
+                podiumHTML += `<div class="podium-${rank} glass-panel p-4 rounded-lg text-center border-2 transform hover:scale-105 transition-transform duration-300">
                     <p class="text-xl font-bold">${rank}º</p>
                     <p class="text-md font-semibold mt-2 truncate text-white">${broker.brokerName}</p>
                     <p class="text-lg font-bold text-gray-300">${valueText}</p>
@@ -338,7 +348,7 @@
                                 (rankingType === 'activation') ? `${broker.activationCount} Ativações` :
                                 `${broker.generalScore.toFixed(2)} Pontos`;
 
-                listHTML += `<div class="flex items-center bg-gray-900/50 p-3 rounded-md ${highlightClass}">
+                listHTML += `<div class="flex items-center glass-panel p-3 rounded-md transition-all duration-300 hover:bg-gray-700/50 ${highlightClass}">
                     <span class="text-sm font-bold text-gray-500 w-8 text-center">${rank}º</span>
                     ${rankIndicator}
                     <span class="font-semibold text-gray-300 flex-1 truncate ml-2">${broker.brokerName}</span>
@@ -370,16 +380,16 @@
 
             if (mainChartInstance) mainChartInstance.destroy();
             Chart.defaults.color = '#9ca3af';
-            Chart.defaults.borderColor = '#374151';
+            Chart.defaults.borderColor = 'rgba(55, 65, 81, 0.5)';
             mainChartInstance = new Chart(chartCanvas, {
                 type: 'bar',
                 data: { labels: chartData.map(d => d.brokerName), datasets: [
-                    { label: 'Depósito Total', data: chartData.map(d => d.totalDeposito), backgroundColor: 'rgba(96, 165, 250, 0.5)', borderRadius: 4 },
-                    { label: 'Capital Líquido', data: chartData.map(d => d.totalCapitalLiquido), backgroundColor: 'rgba(52, 211, 153, 0.5)', borderRadius: 4 }
+                    { label: 'Depósito Total', data: chartData.map(d => d.totalDeposito), backgroundColor: 'rgba(59, 130, 246, 0.6)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1, borderRadius: 4 },
+                    { label: 'Capital Líquido', data: chartData.map(d => d.totalCapitalLiquido), backgroundColor: 'rgba(20, 184, 166, 0.6)', borderColor: 'rgba(20, 184, 166, 1)', borderWidth: 1, borderRadius: 4 }
                 ]},
                 options: { responsive: true, maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, ticks: { callback: v => formatCurrency(v) }}},
-                    plugins: { tooltip: { callbacks: { label: c => `${c.dataset.label}: ${formatCurrency(c.parsed.y)}`}}}
+                    scales: { y: { beginAtZero: true, grid: { color: 'rgba(55, 65, 81, 0.5)' }, ticks: { callback: v => formatCurrency(v) }}},
+                    plugins: { tooltip: { backgroundColor: '#1f2937', titleColor: '#e5e7eb', bodyColor: '#d1d5db', callbacks: { label: c => `${c.dataset.label}: ${formatCurrency(c.parsed.y)}`}}}
                 }
             });
         }
@@ -397,10 +407,6 @@
             renderTeamRanking(dollarGodsContainer, 'DOLLAR GODS', rankingData, currentRankingType);
             renderTeamRanking(eliteSquadContainer, 'ELITE SQUAD', rankingData, currentRankingType);
             renderAnalysis(filteredData);
-            
-            // A animação de subida/descida acontece aqui.
-            // O código compara a nova ordem do ranking com a anterior (salva em 'previousRankings').
-            // Se a posição de um broker for diferente, a linha dele na tabela piscará.
             updatePreviousRankings(rankings);
         }
 
@@ -420,11 +426,11 @@
             });
             
             periodFilterContainer.innerHTML = `
-                <button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition text-gray-400 hover:bg-gray-700/50 hover:text-white" data-period="all">Geral</button>
-                <button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition text-gray-400 hover:bg-gray-700/50 hover:text-white" data-period="today">Hoje</button>
-                <button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition text-gray-400 hover:bg-gray-700/50 hover:text-white" data-period="this_week">Esta Semana</button>
+                <button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition" data-period="all">Geral</button>
+                <button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition text-gray-400 hover:bg-gray-700/50" data-period="today">Hoje</button>
+                <button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition text-gray-400 hover:bg-gray-700/50" data-period="this_week">Esta Semana</button>
             `;
-            sortedMonths.forEach(m => periodFilterContainer.innerHTML += `<button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition text-gray-400 hover:bg-gray-700/50 hover:text-white" data-period="${m.value}">${m.text}</button>`);
+            sortedMonths.forEach(m => periodFilterContainer.innerHTML += `<button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition text-gray-400 hover:bg-gray-700/50" data-period="${m.value}">${m.text}</button>`);
         }
         
         function startCountdown() {
@@ -447,12 +453,11 @@
                 const fullRawData = (Array.isArray(result) && result[0]?.json) ? result[0].json : result;
                 if (!Array.isArray(fullRawData)) throw new Error("Invalid data format");
                 
-                // Filtra os dados para incluir apenas a partir de Julho de 2025
                 rawData = fullRawData.filter(item => {
                     const date = parseDate(getValue(item, 'Data Ativação', 'Data Ativacao'));
                     if (!date) return false;
                     const year = date.getFullYear();
-                    const month = date.getMonth(); // 0-indexed, Julho é 6
+                    const month = date.getMonth();
                     return year > 2025 || (year === 2025 && month >= 6);
                 });
 
@@ -472,26 +477,28 @@
                 const fullRawData = (Array.isArray(result) && result[0]?.json) ? result[0].json : result;
                 if (!Array.isArray(fullRawData)) throw new Error("Invalid data format");
 
-                // Filtra os dados para incluir apenas a partir de Julho de 2025
                 rawData = fullRawData.filter(item => {
                     const date = parseDate(getValue(item, 'Data Ativação', 'Data Ativacao'));
                     if (!date) return false;
                     const year = date.getFullYear();
-                    const month = date.getMonth(); // 0-indexed, Julho é 6
+                    const month = date.getMonth();
                     return year > 2025 || (year === 2025 && month >= 6);
                 });
 
                 populateMonthFilter(rawData);
 
-                // Define o filtro inicial para o mês de Julho ou o mais recente, se disponível
                 const julyOption = periodFilterContainer.querySelector('[data-period="6_2025"]');
                 if (julyOption) {
                     currentPeriod = "6_2025";
                 } else {
                     currentPeriod = "all";
                 }
-                periodFilterContainer.querySelector(`[data-period="${currentPeriod}"]`).classList.add('filter-btn-active');
-
+                
+                const activeButton = periodFilterContainer.querySelector(`[data-period="${currentPeriod}"]`);
+                if(activeButton) {
+                    periodFilterContainer.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('filter-btn-active'));
+                    activeButton.classList.add('filter-btn-active');
+                }
 
                 const rankings = calculateRankings(processData(rawData, currentPeriod));
                 updatePreviousRankings(rankings);
