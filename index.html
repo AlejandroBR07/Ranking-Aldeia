@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard de Competição | Aldeia</title>
+    <title>Leaderboard Master v7.1 | Aldeia</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,7 +19,7 @@
                               radial-gradient(circle at bottom left, rgba(13, 148, 136, 0.1), transparent 50%);
             background-attachment: fixed;
         }
-        .podium-1 { border-color: #FFD700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+        .podium-1 { border-color: #FFD700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.35); }
         .podium-2 { border-color: #C0C0C0; box-shadow: 0 0 15px rgba(192, 192, 192, 0.2); }
         .podium-3 { border-color: #CD7F32; box-shadow: 0 0 15px rgba(205, 127, 50, 0.2); }
         
@@ -30,22 +30,32 @@
         .fade-in { animation: fadeIn 0.6s ease-out forwards; }
 
         @keyframes highlight-change {
-            0% { background-color: rgba(56, 189, 248, 0.1); }
+            0% { background-color: rgba(56, 189, 248, 0.15); }
             100% { background-color: transparent; }
         }
         .highlight-change {
             animation: highlight-change 1.5s ease-out;
         }
-
+        
         .chart-container { position: relative; height: 50vh; width: 100%; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #1f2937; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 20px; }
         .tab-active { border-color: #38bdf8; color: #38bdf8; background-color: rgba(56, 189, 248, 0.1); }
 
-        .rank-up { color: #22c55e; } /* green-500 */
-        .rank-down { color: #ef4444; } /* red-500 */
-        .rank-stable { color: #6b7280; } /* gray-500 */
+        .rank-up { color: #22c55e; }
+        .rank-down { color: #ef4444; }
+        .rank-stable { color: #6b7280; }
+
+        .team-card-winner {
+            border-color: #38bdf8;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+        }
+        .filter-btn-active {
+            background-color: #0ea5e9; /* sky-500 */
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(14, 165, 233, 0.4);
+        }
     </style>
 </head>
 <body class="text-gray-300">
@@ -53,60 +63,64 @@
     <div class="container mx-auto p-4 md:p-8">
         
         <header class="text-center mb-10">
-            <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight">Leaderboard da Aldeia</h1>
-            <p class="text-gray-400 mt-3 text-lg">Análise de Performance por Times</p>
+            <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight">Leaderboard Master v7.1</h1>
+            <p class="text-gray-400 mt-3 text-lg">Centro de Comando da Aldeia</p>
         </header>
 
-        <div class="flex justify-between items-center mb-8 fade-in">
-            <div class="flex items-center gap-4">
-                 <label for="month-filter" class="font-semibold text-gray-300">Mês:</label>
-                 <select id="month-filter" class="bg-gray-800 border border-gray-600 text-white rounded-md px-3 py-1.5 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition">
-                     <option value="all">Todos os Meses</option>
-                 </select>
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 fade-in gap-4">
+            <div id="period-filter-container" class="flex flex-wrap items-center justify-center gap-2 bg-gray-800/50 p-2 rounded-xl border border-gray-700">
+                <!-- Botões de filtro serão injetados aqui pelo JS -->
             </div>
-            <div id="countdown-timer" class="text-sm font-medium text-gray-500"></div>
+            <div id="countdown-timer" class="text-sm font-medium text-gray-500 flex-shrink-0"></div>
         </div>
-
-        <div class="mb-8 fade-in" style="animation-delay: 100ms;">
-            <div id="tabs-container" class="flex items-center border-b border-gray-700">
-                <button data-ranking="value" class="tab-btn tab-active px-4 py-2 font-semibold border-b-2 transition-colors">Ranking por Depósito</button>
-                <button data-ranking="activation" class="tab-btn px-4 py-2 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">Ranking por Ativações</button>
-                <button data-ranking="general" class="tab-btn px-4 py-2 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">Ranking Geral</button>
-            </div>
-        </div>
-
+        
         <div id="loader" class="text-center py-20">
             <p class="mt-4 text-gray-400 font-medium text-lg">Carregando dados da Aldeia...</p>
         </div>
         
         <div id="content-container" class="hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <div class="mb-12 fade-in" style="animation-delay: 100ms;">
+                <h2 class="text-3xl font-bold text-white text-center mb-6">Competição de Times</h2>
+                <div id="team-competition-summary" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Cards dos times serão inseridos aqui -->
+                </div>
+            </div>
+
+            <div class="mb-8 fade-in" style="animation-delay: 200ms;">
+                <div id="tabs-container" class="flex items-center border-b border-gray-700">
+                    <button data-ranking="value" class="tab-btn tab-active px-4 py-2 font-semibold border-b-2 transition-colors">Ranking por Depósito</button>
+                    <button data-ranking="activation" class="tab-btn px-4 py-2 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">Ranking por Ativações</button>
+                    <button data-ranking="general" class="tab-btn px-4 py-2 font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">Ranking Geral</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12 fade-in" style="animation-delay: 300ms;">
                 <div id="team-dollar-gods" class="bg-gray-800/50 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-700"></div>
                 <div id="team-elite-squad" class="bg-gray-800/50 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-700"></div>
             </div>
 
             <div class="fade-in" style="animation-delay: 400ms;">
                 <div class="mb-4">
-                     <h2 class="text-3xl font-bold text-white">Análise Financeira do Mês</h2>
+                     <h2 class="text-3xl font-bold text-white">Análise Financeira</h2>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 flex items-center gap-4">
                         <div class="bg-blue-500/10 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg></div>
                         <div>
-                            <h3 class="text-sm font-medium text-gray-400">Depósito Total</h3>
+                            <h3 class="text-sm font-medium text-gray-400">Depósito Total (Período)</h3>
                             <p id="kpi-deposito-total" class="text-3xl font-bold text-blue-400 mt-1">$0.00</p>
                         </div>
                     </div>
                     <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 flex items-center gap-4">
                         <div class="bg-teal-500/10 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-teal-400"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                         <div>
-                            <h3 class="text-sm font-medium text-gray-400">Total de Ativações</h3>
+                            <h3 class="text-sm font-medium text-gray-400">Total de Ativações (Período)</h3>
                             <p id="kpi-ativacoes-total" class="text-3xl font-bold text-teal-400 mt-1">0</p>
                         </div>
                     </div>
                 </div>
                 <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
-                     <h3 class="text-lg font-semibold text-white mb-4">Depósito vs. Capital Líquido (Mês)</h3>
+                     <h3 class="text-lg font-semibold text-white mb-4">Depósito vs. Capital Líquido (Período)</h3>
                      <div class="chart-container">
                         <canvas id="mainChart"></canvas>
                      </div>
@@ -115,7 +129,7 @@
         </div>
         
         <footer class="text-center mt-12 text-sm text-gray-600">
-            <p>Leaderboard de Competição v6.1</p>
+            <p>Leaderboard de Competição v7.1</p>
         </footer>
     </div>
 
@@ -140,12 +154,14 @@
         let countdownInterval;
         let currentRankingType = 'value';
         let previousRankings = {};
+        let currentPeriod = 'all';
 
         // --- DOM ELEMENTS ---
         const loaderDiv = document.getElementById('loader');
         const contentContainer = document.getElementById('content-container');
-        const monthFilter = document.getElementById('month-filter');
+        const periodFilterContainer = document.getElementById('period-filter-container');
         const tabsContainer = document.getElementById('tabs-container');
+        const teamCompetitionSummary = document.getElementById('team-competition-summary');
         const dollarGodsContainer = document.getElementById('team-dollar-gods');
         const eliteSquadContainer = document.getElementById('team-elite-squad');
         const countdownTimerDiv = document.getElementById('countdown-timer');
@@ -177,14 +193,26 @@
         };
 
         // --- DATA PROCESSING ---
-        function processData(data, selectedMonth) {
+        function processData(data, selectedPeriod) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)); // Adjust for week starting on Monday
+
             return data.map(item => ({
                 ...item,
                 parsedDate: parseDate(getValue(item, 'Data Ativação', 'Data Ativacao')),
                 team: getTeamByBroker(getValue(item, 'Broker'))
             })).filter(item => {
-                if (selectedMonth === 'all' || !item.parsedDate) return true;
-                return `${item.parsedDate.getMonth()}_${item.parsedDate.getFullYear()}` === selectedMonth;
+                if (!item.parsedDate) return selectedPeriod === 'all';
+                const itemDate = new Date(item.parsedDate.getFullYear(), item.parsedDate.getMonth(), item.parsedDate.getDate());
+
+                switch(selectedPeriod) {
+                    case 'all': return true;
+                    case 'today': return itemDate.getTime() === today.getTime();
+                    case 'this_week': return itemDate >= startOfWeek && itemDate <= today;
+                    default: return `${item.parsedDate.getMonth()}_${item.parsedDate.getFullYear()}` === selectedPeriod;
+                }
             });
         }
 
@@ -208,7 +236,7 @@
             const maxDeposito = Math.max(...valueRanking.map(b => b.totalDeposito), 1);
             const maxActivations = Math.max(...activationRanking.map(b => b.activationCount), 1);
             allBrokers.forEach(broker => {
-                broker.generalScore = ((broker.totalDeposito / maxDeposito) * 50) + ((broker.activationCount / maxActivations) * 50);
+                broker.generalScore = ((broker.totalDeposito / maxDeposito) * 60) + ((broker.activationCount / maxActivations) * 40);
             });
             const generalRanking = allBrokers.sort((a, b) => b.generalScore - a.generalScore);
             
@@ -225,12 +253,47 @@
         }
 
         // --- RENDER FUNCTIONS ---
+        function renderTeamCompetition(data) {
+            const teamTotals = data.reduce((acc, item) => {
+                const team = item.team;
+                if(team !== 'Sem Time') {
+                    if(!acc[team]) acc[team] = { totalDeposito: 0, activationCount: 0 };
+                    acc[team].totalDeposito += parseCurrency(getValue(item, 'Depósito', 'Deposito'));
+                    const ativacao = getValue(item, 'Ativação', 'Ativacao', 'CheckMark');
+                    if (['Ativação', 'Validado', 'Sim'].includes(ativacao)) acc[team].activationCount++;
+                }
+                return acc;
+            }, {});
+
+            const dg = teamTotals['DOLLAR GODS'] || { totalDeposito: 0, activationCount: 0 };
+            const es = teamTotals['ELITE SQUAD'] || { totalDeposito: 0, activationCount: 0 };
+            
+            const winner = dg.totalDeposito > es.totalDeposito ? 'DOLLAR GODS' : (es.totalDeposito > dg.totalDeposito ? 'ELITE SQUAD' : null);
+
+            teamCompetitionSummary.innerHTML = `
+                <div class="team-card bg-gray-800/50 p-6 rounded-2xl border-2 border-gray-700 transition-all duration-500 ${winner === 'DOLLAR GODS' ? 'team-card-winner' : ''}">
+                    <h3 class="text-2xl font-bold text-white">DOLLAR GODS</h3>
+                    <div class="mt-4 space-y-3">
+                        <p class="text-lg"><span class="font-semibold text-gray-400">Depósito Total:</span> <span class="font-bold text-blue-400 text-xl">${formatCurrency(dg.totalDeposito)}</span></p>
+                        <p class="text-lg"><span class="font-semibold text-gray-400">Ativações:</span> <span class="font-bold text-teal-400 text-xl">${dg.activationCount}</span></p>
+                    </div>
+                </div>
+                <div class="team-card bg-gray-800/50 p-6 rounded-2xl border-2 border-gray-700 transition-all duration-500 ${winner === 'ELITE SQUAD' ? 'team-card-winner' : ''}">
+                    <h3 class="text-2xl font-bold text-white">ELITE SQUAD</h3>
+                    <div class="mt-4 space-y-3">
+                        <p class="text-lg"><span class="font-semibold text-gray-400">Depósito Total:</span> <span class="font-bold text-blue-400 text-xl">${formatCurrency(es.totalDeposito)}</span></p>
+                        <p class="text-lg"><span class="font-semibold text-gray-400">Ativações:</span> <span class="font-bold text-teal-400 text-xl">${es.activationCount}</span></p>
+                    </div>
+                </div>
+            `;
+        }
+
         function renderTeamRanking(container, teamName, rankingData, rankingType) {
             const teamData = rankingData.filter(b => b.team === teamName);
             let contentHTML = `<h3 class="text-2xl font-bold text-white mb-6">${teamName}</h3>`;
 
             if (teamData.length === 0) {
-                container.innerHTML = contentHTML + `<p class="text-gray-500 text-center py-10">Nenhum dado para este time.</p>`;
+                container.innerHTML = contentHTML + `<p class="text-gray-500 text-center py-10">Nenhum dado para este time no período.</p>`;
                 return;
             }
             
@@ -273,7 +336,6 @@
                 </div>`;
             });
             listHTML += '</div>';
-
             container.innerHTML = contentHTML + podiumHTML + listHTML;
         }
 
@@ -313,8 +375,7 @@
         }
         
         function updateDisplay() {
-            const selectedMonth = monthFilter.value;
-            const filteredData = processData(rawData, selectedMonth);
+            const filteredData = processData(rawData, currentPeriod);
             const rankings = calculateRankings(filteredData);
             
             let rankingData;
@@ -322,11 +383,11 @@
             else if (currentRankingType === 'activation') rankingData = rankings.activationRanking;
             else rankingData = rankings.generalRanking;
 
+            renderTeamCompetition(filteredData);
             renderTeamRanking(dollarGodsContainer, 'DOLLAR GODS', rankingData, currentRankingType);
             renderTeamRanking(eliteSquadContainer, 'ELITE SQUAD', rankingData, currentRankingType);
             renderAnalysis(filteredData);
             
-            // Update previous ranks after rendering
             updatePreviousRankings(rankings);
         }
 
@@ -344,15 +405,21 @@
                 const [aMonth, aYear] = a.value.split('_'); const [bMonth, bYear] = b.value.split('_');
                 return (bYear - aYear) || (bMonth - aMonth);
             });
-            monthFilter.innerHTML = '<option value="all">Todos os Meses</option>';
-            sortedMonths.forEach(m => monthFilter.innerHTML += `<option value="${m.value}">${m.text}</option>`);
+            
+            periodFilterContainer.innerHTML = `
+                <button class="filter-btn filter-btn-active px-4 py-1.5 rounded-lg text-sm font-semibold transition" data-period="all">Geral</button>
+                <button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition text-gray-400 hover:bg-gray-700/50 hover:text-white" data-period="today">Hoje</button>
+                <button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition text-gray-400 hover:bg-gray-700/50 hover:text-white" data-period="this_week">Esta Semana</button>
+            `;
+            sortedMonths.forEach(m => periodFilterContainer.innerHTML += `<button class="filter-btn px-4 py-1.5 rounded-lg text-sm font-semibold transition text-gray-400 hover:bg-gray-700/50 hover:text-white" data-period="${m.value}">${m.text}</button>`);
         }
         
         function startCountdown() {
             let secondsLeft = UPDATE_INTERVAL_SECONDS;
             clearInterval(countdownInterval);
             const updateTimer = () => {
-                countdownTimerDiv.textContent = `Atualiza em ${secondsLeft}s...`;
+                countdownTimerDiv.textContent = `Próxima atualização em ${secondsLeft}s...`;
+                if(secondsLeft < 0) secondsLeft = UPDATE_INTERVAL_SECONDS;
                 secondsLeft--;
             };
             updateTimer();
@@ -360,7 +427,6 @@
         }
 
         async function fetchDataAndUpdate() {
-            startCountdown();
             try {
                 const response = await fetch(urlDoWebhookN8N);
                 if (!response.ok) throw new Error("Network error");
@@ -370,6 +436,8 @@
                 updateDisplay();
             } catch (error) {
                 console.error("Failed to fetch data:", error);
+            } finally {
+                startCountdown();
             }
         }
         
@@ -383,7 +451,7 @@
 
                 populateMonthFilter(rawData);
                 const rankings = calculateRankings(processData(rawData, 'all'));
-                updatePreviousRankings(rankings); // Set initial state
+                updatePreviousRankings(rankings);
                 updateDisplay();
 
                 loaderDiv.classList.add('hidden');
@@ -398,12 +466,22 @@
             }
         }
         
-        monthFilter.addEventListener('change', updateDisplay);
+        periodFilterContainer.addEventListener('click', (e) => {
+            const clickedButton = e.target.closest('.filter-btn');
+            if (clickedButton) {
+                periodFilterContainer.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('filter-btn-active'));
+                clickedButton.classList.add('filter-btn-active');
+                currentPeriod = clickedButton.dataset.period;
+                updateDisplay();
+            }
+        });
+
         tabsContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('tab-btn')) {
+            const clickedButton = e.target.closest('.tab-btn');
+            if (clickedButton) {
                 tabsContainer.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('tab-active'));
-                e.target.classList.add('tab-active');
-                currentRankingType = e.target.dataset.ranking;
+                clickedButton.classList.add('tab-active');
+                currentRankingType = clickedButton.dataset.ranking;
                 updateDisplay();
             }
         });
