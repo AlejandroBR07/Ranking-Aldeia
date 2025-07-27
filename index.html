@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Command Center v10.1: Apex | Aldeia</title>
+    <title>Command Center v10.2: Apex | Aldeia</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,6 +19,8 @@
             --glow-color: #38BDF8;
             --text-primary: #E5E7EB;
             --text-secondary: #9CA3AF;
+            --team-dollar-gods: #FFD700;
+            --team-elite-squad: #38BDF8;
         }
 
         body { 
@@ -50,9 +52,9 @@
 
         #command-center {
             width: 100%;
-            max-width: 1400px;
+            max-width: 1600px; /* Aumentado para acomodar 3 colunas */
             height: 90vh;
-            max-height: 850px;
+            max-height: 900px;
             background-color: var(--panel-bg);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
@@ -120,6 +122,10 @@
         .podium-1 .avatar-ring { border-color: #FFD700; }
         .podium-2 .avatar-ring { border-color: #C0C0C0; }
         .podium-3 .avatar-ring { border-color: #CD7F32; }
+        
+        .avatar-team-dg { border-color: var(--team-dollar-gods); }
+        .avatar-team-es { border-color: var(--team-elite-squad); }
+
 
         .rank-up { color: #22c55e; } .rank-down { color: #ef4444; } .rank-stable { color: #6b7280; }
         
@@ -206,7 +212,7 @@
                             <!-- Ranking tabs will be rendered here -->
                         </div>
                     </header>
-                    <div id="leaderboard-content" class="flex-grow w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-0">
+                    <div id="leaderboard-content" class="flex-grow w-full max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
                          <!-- Leaderboard lists will be rendered here -->
                     </div>
                 </div>
@@ -371,7 +377,7 @@
             if (currentRankingType === 'activation') rankingData = rankings.activationRanking;
             else if (currentRankingType === 'general') rankingData = rankings.generalRanking;
             
-            renderTeamRanking(['DOLLAR GODS', 'ELITE SQUAD'], rankingData, currentRankingType);
+            renderLeaderboard(rankingData, currentRankingType);
             renderAnalysisChart(filteredData);
             updatePreviousRankings(rankings);
         }
@@ -391,63 +397,71 @@
             DOM.teamContent.innerHTML = `
                 <div class="fade-in-child transition-all duration-500 ${winner === 'DOLLAR GODS' ? 'winning-team' : ''}" style="animation-delay: 200ms;">
                     <div class="bg-black/20 p-6 rounded-3xl h-full border border-transparent">
-                        <h2 class="text-3xl font-bold text-center text-white">DOLLAR GODS</h2>
+                        <h2 class="text-2xl font-bold text-center text-white">DOLLAR GODS</h2>
                         <p class="text-center font-bold mt-1 h-6 ${winner === 'DOLLAR GODS' ? 'text-yellow-400' : ''}">${winner === 'DOLLAR GODS' ? 'LIDERANDO' : ''}</p>
                         <div class="mt-4 text-center space-y-4">
-                            <div><p class="text-4xl font-black text-blue-400">${formatCurrency(dg.totalDeposito)}</p><p class="text-gray-400">em Depósitos</p></div>
-                            <div><p class="text-4xl font-black text-teal-400">${dg.activationCount}</p><p class="text-gray-400">Ativações</p></div>
+                            <div><p class="text-3xl font-black text-blue-400">${formatCurrency(dg.totalDeposito)}</p><p class="text-gray-400 text-sm">em Depósitos</p></div>
+                            <div><p class="text-3xl font-black text-teal-400">${dg.activationCount}</p><p class="text-gray-400 text-sm">Ativações</p></div>
                         </div>
                     </div>
                 </div>
                 <div class="fade-in-child transition-all duration-500 ${winner === 'ELITE SQUAD' ? 'winning-team' : ''}" style="animation-delay: 300ms;">
                     <div class="bg-black/20 p-6 rounded-3xl h-full border border-transparent">
-                        <h2 class="text-3xl font-bold text-center text-white">ELITE SQUAD</h2>
+                        <h2 class="text-2xl font-bold text-center text-white">ELITE SQUAD</h2>
                         <p class="text-center font-bold mt-1 h-6 ${winner === 'ELITE SQUAD' ? 'text-yellow-400' : ''}">${winner === 'ELITE SQUAD' ? 'LIDERANDO' : ''}</p>
                         <div class="mt-4 text-center space-y-4">
-                            <div><p class="text-4xl font-black text-blue-400">${formatCurrency(es.totalDeposito)}</p><p class="text-gray-400">em Depósitos</p></div>
-                            <div><p class="text-4xl font-black text-teal-400">${es.activationCount}</p><p class="text-gray-400">Ativações</p></div>
+                            <div><p class="text-3xl font-black text-blue-400">${formatCurrency(es.totalDeposito)}</p><p class="text-gray-400 text-sm">em Depósitos</p></div>
+                            <div><p class="text-3xl font-black text-teal-400">${es.activationCount}</p><p class="text-gray-400 text-sm">Ativações</p></div>
                         </div>
                     </div>
                 </div>
             `;
         }
         
-        function renderTeamRanking(teamNames, rankingData, rankingType) {
-            DOM.leaderboardContent.innerHTML = '';
-            teamNames.forEach((teamName, i) => {
-                 const teamData = rankingData.filter(b => b.team === teamName);
-                 let contentHTML = `<div class="min-h-0 flex flex-col fade-in-child" style="animation-delay: ${200 + i*100}ms;">
-                    <h3 class="text-2xl font-bold text-white mb-4 text-center">${teamName}</h3>`;
-                 if (teamData.length === 0) {
-                     contentHTML += `<div class="bg-black/20 rounded-xl flex-grow flex items-center justify-center"><p class="text-gray-500">Nenhum dado.</p></div></div>`;
-                 } else {
-                     let listHTML = '<div class="space-y-2 overflow-y-auto flex-grow pr-2 ranking-list">';
-                     teamData.forEach((broker, index) => {
-                         const rank = index + 1;
-                         const prevRank = previousRankings[rankingType]?.get(broker.brokerName);
-                         let rankIndicator = '<span class="rank-stable text-lg w-6 text-center">-</span>';
-                         let highlightClass = '';
-                         if (prevRank) { 
-                             if (rank < prevRank) rankIndicator = '<span class="rank-up text-lg w-6 text-center">▲</span>'; 
-                             else if (rank > prevRank) rankIndicator = '<span class="rank-down text-lg w-6 text-center">▼</span>'; 
-                             if (rank !== prevRank) highlightClass = 'highlight-change'; 
-                         }
-                         let valueText = (rankingType === 'value') ? formatCurrency(broker.totalDeposito) : (rankingType === 'activation') ? `${broker.activationCount} Ativações` : `${broker.generalScore.toFixed(2)} pts`;
-                         const initials = broker.brokerName.split(' ').map(n => n[0]).join('').substring(0,2);
-                         listHTML += `<div class="flex items-center bg-black/20 p-2 rounded-xl transition duration-300 ${highlightClass}">
-                             <span class="text-md font-bold text-gray-400 w-8 text-center">${rank}º</span>
-                             <div class="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center font-bold text-sm text-white mx-2 border-2 avatar-ring ${rank <= 3 ? `podium-${rank}`: 'border-transparent'}">${initials}</div>
-                             <span class="font-semibold text-gray-200 flex-1 truncate">${broker.brokerName}</span>
-                             ${rankIndicator}
-                             <span class="text-sm font-semibold text-gray-300 ml-2 w-32 text-right">${valueText}</span>
-                         </div>`;
-                     });
-                     listHTML += '</div>';
-                     contentHTML += listHTML + '</div>';
-                 }
-                 DOM.leaderboardContent.innerHTML += contentHTML;
-            });
+        function renderSingleRanking(title, data, rankingType, isOverall = false) {
+             let contentHTML = `<div class="min-h-0 flex flex-col fade-in-child">
+                <h3 class="text-xl font-bold text-white mb-4 text-center">${title}</h3>`;
+             if (data.length === 0) {
+                 contentHTML += `<div class="bg-black/20 rounded-xl flex-grow flex items-center justify-center"><p class="text-gray-500">Nenhum dado.</p></div></div>`;
+             } else {
+                 let listHTML = '<div class="space-y-2 overflow-y-auto flex-grow pr-2 ranking-list">';
+                 data.forEach((broker, index) => {
+                     const rank = index + 1;
+                     const prevRank = previousRankings[rankingType]?.get(broker.brokerName);
+                     let rankIndicator = '<span class="rank-stable text-lg w-6 text-center">-</span>';
+                     let highlightClass = '';
+                     if (prevRank) { 
+                         if (rank < prevRank) rankIndicator = '<span class="rank-up text-lg w-6 text-center">▲</span>'; 
+                         else if (rank > prevRank) rankIndicator = '<span class="rank-down text-lg w-6 text-center">▼</span>'; 
+                         if (rank !== prevRank) highlightClass = 'highlight-change'; 
+                     }
+                     let valueText = (rankingType === 'value') ? formatCurrency(broker.totalDeposito) : (rankingType === 'activation') ? `${broker.activationCount} Ativações` : `${broker.generalScore.toFixed(2)} pts`;
+                     const initials = broker.brokerName.split(' ').map(n => n[0]).join('').substring(0,2);
+                     const teamColorClass = isOverall ? (broker.team === 'DOLLAR GODS' ? 'avatar-team-dg' : 'avatar-team-es') : '';
+                     listHTML += `<div class="flex items-center bg-black/20 p-2 rounded-xl transition duration-300 ${highlightClass}">
+                         <span class="text-md font-bold text-gray-400 w-8 text-center">${rank}º</span>
+                         <div class="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center font-bold text-sm text-white mx-2 border-2 avatar-ring ${rank <= 3 && isOverall ? `podium-${rank}`: ''} ${teamColorClass}">${initials}</div>
+                         <span class="font-semibold text-gray-200 flex-1 truncate">${broker.brokerName}</span>
+                         ${rankIndicator}
+                         <span class="text-sm font-semibold text-gray-300 ml-2 w-32 text-right">${valueText}</span>
+                     </div>`;
+                 });
+                 listHTML += '</div>';
+                 contentHTML += listHTML + '</div>';
+             }
+             return contentHTML;
         }
+
+        function renderLeaderboard(rankingData, rankingType) {
+            const dollarGodsData = rankingData.filter(b => b.team === 'DOLLAR GODS');
+            const eliteSquadData = rankingData.filter(b => b.team === 'ELITE SQUAD');
+
+            DOM.leaderboardContent.innerHTML = 
+                renderSingleRanking('DOLLAR GODS', dollarGodsData, rankingType) +
+                renderSingleRanking('RANKING GERAL', rankingData, rankingType, true) +
+                renderSingleRanking('ELITE SQUAD', eliteSquadData, rankingType);
+        }
+
 
         function renderAnalysisChart(data) {
              const summary = data.reduce((acc, item) => {
