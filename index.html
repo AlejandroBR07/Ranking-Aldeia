@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard Vision Pro v8.1 | Aldeia</title>
+    <title>Leaderboard Vision Pro v8.2 | Aldeia</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -91,7 +91,12 @@
             <div id="period-filter-container" class="flex flex-wrap items-center justify-center gap-2 glass-panel p-2 rounded-xl">
                 <!-- Botões de filtro -->
             </div>
-            <div id="countdown-timer" class="text-sm font-medium text-gray-500 flex-shrink-0"></div>
+            <div id="countdown-timer" class="text-sm font-medium text-gray-500 flex-shrink-0 flex items-center gap-2">
+                <span id="countdown-text"></span>
+                <button id="refresh-btn" title="Atualizar Agora" class="p-1.5 rounded-full hover:bg-gray-700/50 transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                </button>
+            </div>
         </div>
         
         <div id="loader" class="text-center py-20">
@@ -132,15 +137,15 @@
                         </div>
                     </div>
                     <div class="glass-panel p-6 rounded-2xl flex items-center gap-4">
-                        <div class="bg-teal-500/10 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-teal-400"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                        <div class="bg-teal-500/10 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-teal-400"><hash></hash><path d="M4 4h16v16H4z"></path><path d="M9 12h6"></path><path d="M12 9v6"></path></svg></div>
                         <div>
-                            <h3 class="text-sm font-medium text-gray-400">Total de Ativações (Período)</h3>
-                            <p id="kpi-ativacoes-total" class="text-3xl font-bold text-teal-400 mt-1">0</p>
+                            <h3 class="text-sm font-medium text-gray-400">Total de Depósitos (Período)</h3>
+                            <p id="kpi-depositos-count-total" class="text-3xl font-bold text-teal-400 mt-1">0</p>
                         </div>
                     </div>
                 </div>
                 <div class="glass-panel p-6 rounded-2xl">
-                     <h3 class="text-lg font-semibold text-white mb-4">Depósito vs. Capital Líquido (Período)</h3>
+                     <h3 class="text-lg font-semibold text-white mb-4">Valor vs. Quantidade de Depósitos (Período)</h3>
                      <div class="chart-container">
                         <canvas id="mainChart"></canvas>
                      </div>
@@ -149,7 +154,7 @@
         </div>
         
         <footer class="text-center mt-16 text-sm text-gray-600">
-            <p>Leaderboard Vision Pro v8.1</p>
+            <p>Leaderboard Vision Pro v8.2</p>
         </footer>
     </div>
 
@@ -157,7 +162,7 @@
     (function() {
         // --- CONFIG ---
         const urlDoWebhookN8N = 'https://aldeia2930.app.n8n.cloud/webhook/afe90f44-77d3-4a28-afa6-fb26d616299d';
-        const UPDATE_INTERVAL_SECONDS = 1800; // 30 minutos
+        const UPDATE_INTERVAL_SECONDS = 3600; // 1 hora para otimizar execuções
         const TEAMS = {
             'DOLLAR GODS': ['Felipe', 'Natan', 'Allison', 'João', 'Raul', 'Otavio'],
             'ELITE SQUAD': ['Luan', 'Victor', 'G. Dias', 'G. Wagner', 'Ruan', 'Arthur', 'Laurence', 'Davi']
@@ -186,8 +191,9 @@
         const eliteSquadContainer = document.getElementById('team-elite-squad');
         const countdownTimerDiv = document.getElementById('countdown-timer');
         const kpiDeposito = document.getElementById('kpi-deposito-total');
-        const kpiAtivacoes = document.getElementById('kpi-ativacoes-total');
+        const kpiDepositosCount = document.getElementById('kpi-depositos-count-total');
         const chartCanvas = document.getElementById('mainChart');
+        const refreshBtn = document.getElementById('refresh-btn');
 
         // --- HELPERS ---
         const getValue = (item, ...keys) => {
@@ -361,35 +367,83 @@
 
         function renderAnalysis(data) {
             const totals = data.reduce((acc, item) => {
-                acc.deposito += parseCurrency(getValue(item, 'Depósito', 'Deposito'));
-                const ativacao = getValue(item, 'Ativação', 'Ativacao', 'CheckMark');
-                if (['Ativação', 'Validado', 'Sim'].includes(ativacao)) acc.ativacoes++;
+                const depositoValor = parseCurrency(getValue(item, 'Depósito', 'Deposito'));
+                acc.deposito += depositoValor;
+                if (depositoValor > 0) acc.depositoCount++;
                 return acc;
-            }, { deposito: 0, ativacoes: 0 });
+            }, { deposito: 0, depositoCount: 0 });
             kpiDeposito.textContent = formatCurrency(totals.deposito);
-            kpiAtivacoes.textContent = totals.ativacoes;
+            kpiDepositosCount.textContent = totals.depositoCount;
 
             const summary = data.reduce((acc, item) => {
                 const shortName = BROKER_MAP[getValue(item, 'Broker')] || getValue(item, 'Broker');
-                if(!acc[shortName]) acc[shortName] = { brokerName: shortName, totalDeposito: 0, totalCapitalLiquido: 0 };
-                acc[shortName].totalDeposito += parseCurrency(getValue(item, 'Depósito', 'Deposito'));
-                acc[shortName].totalCapitalLiquido += parseCurrency(getValue(item, 'Capital Líquido', 'Capital_Líquido', 'CapitalLiquido', 'Capital Liquido'));
+                if(!acc[shortName]) acc[shortName] = { brokerName: shortName, totalDeposito: 0, depositoCount: 0 };
+                const depositoValor = parseCurrency(getValue(item, 'Depósito', 'Deposito'));
+                if (depositoValor > 0) {
+                    acc[shortName].totalDeposito += depositoValor;
+                    acc[shortName].depositoCount++;
+                }
                 return acc;
             }, {});
-            const chartData = Object.values(summary).sort((a,b) => b.totalCapitalLiquido - a.totalCapitalLiquido);
+            const chartData = Object.values(summary).sort((a,b) => b.totalDeposito - a.totalDeposito);
 
             if (mainChartInstance) mainChartInstance.destroy();
             Chart.defaults.color = '#9ca3af';
             Chart.defaults.borderColor = 'rgba(55, 65, 81, 0.5)';
             mainChartInstance = new Chart(chartCanvas, {
                 type: 'bar',
-                data: { labels: chartData.map(d => d.brokerName), datasets: [
-                    { label: 'Depósito Total', data: chartData.map(d => d.totalDeposito), backgroundColor: 'rgba(59, 130, 246, 0.6)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1, borderRadius: 4 },
-                    { label: 'Capital Líquido', data: chartData.map(d => d.totalCapitalLiquido), backgroundColor: 'rgba(20, 184, 166, 0.6)', borderColor: 'rgba(20, 184, 166, 1)', borderWidth: 1, borderRadius: 4 }
+                data: { 
+                    labels: chartData.map(d => d.brokerName), 
+                    datasets: [
+                        { 
+                            label: 'Valor Total Depositado', 
+                            data: chartData.map(d => d.totalDeposito), 
+                            backgroundColor: 'rgba(59, 130, 246, 0.6)', 
+                            borderColor: 'rgba(59, 130, 246, 1)', 
+                            borderWidth: 1, 
+                            borderRadius: 4,
+                            yAxisID: 'y'
+                        },
+                        { 
+                            label: 'Quantidade de Depósitos', 
+                            data: chartData.map(d => d.depositoCount), 
+                            backgroundColor: 'rgba(20, 184, 166, 0.6)', 
+                            borderColor: 'rgba(20, 184, 166, 1)', 
+                            borderWidth: 1, 
+                            borderRadius: 4,
+                            yAxisID: 'y1' 
+                        }
                 ]},
-                options: { responsive: true, maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, grid: { color: 'rgba(55, 65, 81, 0.5)' }, ticks: { callback: v => formatCurrency(v) }}},
-                    plugins: { tooltip: { backgroundColor: '#1f2937', titleColor: '#e5e7eb', bodyColor: '#d1d5db', callbacks: { label: c => `${c.dataset.label}: ${formatCurrency(c.parsed.y)}`}}}
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { 
+                        y: { 
+                            type: 'linear', display: true, position: 'left',
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(55, 65, 81, 0.5)' }, 
+                            ticks: { callback: v => formatCurrency(v) }
+                        },
+                        y1: {
+                            type: 'linear', display: true, position: 'right',
+                            beginAtZero: true,
+                            grid: { drawOnChartArea: false },
+                            ticks: { stepSize: 1 }
+                        }
+                    },
+                    plugins: { 
+                        tooltip: { 
+                            backgroundColor: '#1f2937', titleColor: '#e5e7eb', bodyColor: '#d1d5db', 
+                            callbacks: { 
+                                label: c => {
+                                    let label = c.dataset.label || '';
+                                    if(label) label += ': ';
+                                    if(c.dataset.yAxisID === 'y') label += formatCurrency(c.parsed.y);
+                                    else label += c.parsed.y;
+                                    return label;
+                                }
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -436,6 +490,7 @@
         function startCountdown() {
             let secondsLeft = UPDATE_INTERVAL_SECONDS;
             clearInterval(countdownInterval);
+            const countdownText = document.getElementById('countdown-text');
             const updateTimer = () => {
                 if (secondsLeft >= 0) {
                     const minutes = Math.floor(secondsLeft / 60);
@@ -447,10 +502,10 @@
                     }
                     timeString += `${seconds.toString().padStart(2, '0')}s...`;
                     
-                    countdownTimerDiv.textContent = timeString;
+                    countdownText.textContent = timeString;
                     secondsLeft--;
                 } else {
-                    countdownTimerDiv.textContent = "Atualizando...";
+                    countdownText.textContent = "Atualizando...";
                 }
             };
             updateTimer();
@@ -528,6 +583,11 @@
             }
         }
         
+        refreshBtn.addEventListener('click', () => {
+            document.getElementById('countdown-text').textContent = "Atualizando...";
+            fetchDataAndUpdate();
+        });
+
         periodFilterContainer.addEventListener('click', (e) => {
             const clickedButton = e.target.closest('.filter-btn');
             if (clickedButton) {
