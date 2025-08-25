@@ -1,93 +1,269 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Competição de Times - Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Command Center v10.2: Apex | Aldeia</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
-        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
-        .fade-in-child { opacity: 0; animation: fadeInUp 0.6s ease-out forwards; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .winning-team { transform: scale(1.02); box-shadow: 0 0 30px rgba(251, 191, 36, 0.3); }
-        .winning-team > div { border-color: rgba(251, 191, 36, 0.5) !important; }
-        .filter-btn { background: rgba(55, 65, 81, 0.5); color: #9ca3af; transition: all 0.3s; }
-        .filter-btn:hover, .filter-btn.active { background: #3b82f6; color: white; }
-        .ranking-tab { background: rgba(55, 65, 81, 0.5); color: #9ca3af; }
-        .ranking-tab:hover, .ranking-tab.active { background: #10b981; color: white; }
-        .nav-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(156, 163, 175, 0.5); cursor: pointer; transition: all 0.3s; }
-        .nav-dot.active { background: #3b82f6; transform: scale(1.2); }
-        .slide { display: none; opacity: 0; transition: opacity 0.5s ease-in-out; }
-        .slide.active { display: block; opacity: 1; }
-        #progress-bar { height: 4px; background: #3b82f6; transition: width 15s linear; }
-        .broker-item { transition: all 0.3s ease; }
-        .broker-item:hover { transform: translateX(5px); }
-        .rank-change { font-size: 0.75rem; padding: 2px 6px; border-radius: 12px; font-weight: bold; }
-        .rank-up { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-        .rank-down { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-        .rank-same { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
+        :root {
+            --bg-color: #0A0A0F;
+            --panel-bg: rgba(15, 18, 32, 0.5);
+            --border-color: rgba(56, 73, 117, 0.3);
+            --glow-color: #38BDF8;
+            --text-primary: #E5E7EB;
+            --text-secondary: #9CA3AF;
+            --team-dollar-gods: #FFD700;
+            --team-elite-squad: #38BDF8;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-color);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        #animated-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            background-image: 
+                linear-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.1) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: grid-pan 80s linear infinite;
+        }
+
+        @keyframes grid-pan {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+        }
+
+        #command-center {
+            width: 100%;
+            max-width: 1600px; /* Aumentado para acomodar 3 colunas */
+            height: 90vh;
+            max-height: 900px;
+            background-color: var(--panel-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-color);
+            border-radius: 2rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 80px rgba(0, 0, 0, 0.6);
+            padding: 2rem;
+            opacity: 0;
+            transform: scale(0.95);
+            animation: fadeInPanel 1s ease-out forwards;
+        }
+
+        @keyframes fadeInPanel {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .view-slide {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out;
+            transform: translateY(20px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 0;
+        }
+        .view-slide.active { opacity: 1; visibility: visible; transform: translateY(0); }
+
+        @keyframes fadeInChild {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .view-slide.active .fade-in-child { animation: fadeInChild 0.6s ease-out forwards; }
+        
+        #progress-bar {
+            height: 100%;
+            background: var(--glow-color);
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px var(--glow-color);
+            border-radius: 2px;
+        }
+        
+        .filter-btn, .ranking-tab {
+            color: var(--text-secondary); 
+            background-color: rgba(30, 41, 59, 0.6);
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .filter-btn:hover, .ranking-tab:hover {
+            background-color: rgba(55, 65, 81, 0.8);
+            color: var(--text-primary);
+        }
+        .filter-btn-active {
+            background-color: var(--glow-color);
+            color: #030712 !important;
+            font-weight: 600;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .podium-1 .avatar-ring { border-color: #FFD700; }
+        .podium-2 .avatar-ring { border-color: #C0C0C0; }
+        .podium-3 .avatar-ring { border-color: #CD7F32; }
+        
+        .avatar-team-dg { border-color: var(--team-dollar-gods); }
+        .avatar-team-es { border-color: var(--team-elite-squad); }
+
+
+        .rank-up { color: #22c55e; } .rank-down { color: #ef4444; } .rank-stable { color: #6b7280; }
+        
+        .nav-dots {
+            position: absolute;
+            bottom: 1.5rem; left: 50%;
+            transform: translateX(-50%);
+            display: flex; gap: 0.75rem;
+        }
+        .nav-dot {
+            width: 10px; height: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .nav-dot:hover { background-color: rgba(255, 255, 255, 0.4); }
+        .nav-dot.active { background-color: var(--glow-color); transform: scale(1.2); box-shadow: 0 0 8px var(--glow-color); }
+        
+        .winning-team {
+            transform: scale(1.03);
+            border-color: var(--glow-color);
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
+        }
+
+        .highlight-change { animation: highlight 1.5s ease-out; }
+        @keyframes highlight {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(56, 189, 248, 0.2); }
+        }
+
+        /* Scrollbar styles for ranking list */
+        .ranking-list::-webkit-scrollbar { width: 4px; }
+        .ranking-list::-webkit-scrollbar-track { background: transparent; }
+        .ranking-list::-webkit-scrollbar-thumb { background-color: rgba(56, 189, 248, 0.5); border-radius: 20px; }
+
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            z-index: 20;
+            color: white;
+        }
+        #command-center:hover .nav-arrow { opacity: 1; }
+        .nav-arrow:hover { background-color: rgba(55, 65, 81, 0.8); border-color: var(--glow-color); }
+        #prev-slide { left: 0.5rem; }
+        #next-slide { right: 0.5rem; }
     </style>
 </head>
-<body class="min-h-screen text-white">
-    <div id="loader" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50">
-        <div class="text-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p class="text-xl">Carregando dados...</p>
-        </div>
-    </div>
+<body>
+    <div id="animated-bg"></div>
 
-    <div id="command-center" class="container mx-auto px-4 py-6 max-w-7xl" style="display: none;">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-teal-400 bg-clip-text text-transparent">
-                Competição de Times
-            </h1>
-            <div class="flex justify-center items-center gap-4 text-sm text-gray-400">
-                <span id="countdown-timer">Carregando...</span>
-                <button id="refresh-btn" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded-md transition">
-                    Atualizar
-                </button>
-            </div>
-        </header>
-
-        <div class="mb-6">
-            <div class="bg-gray-800 rounded-lg h-1 mb-4">
-                <div id="progress-bar" class="bg-blue-500 h-full rounded-lg" style="width: 0%;"></div>
-            </div>
-            <div class="flex justify-center gap-2 mb-4" id="nav-dots-container"></div>
-            <div class="flex justify-center gap-2">
-                <button id="prev-slide" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition">
-                    ← Anterior
-                </button>
-                <button id="next-slide" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition">
-                    Próximo →
-                </button>
-            </div>
-        </div>
-
-        <div id="view-teams" class="slide">
-            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto" id="team-competition-content"></div>
-        </div>
-
-        <div id="view-leaderboard" class="slide">
-            <div class="max-w-4xl mx-auto">
-                <div class="flex flex-wrap justify-center gap-2 mb-6" id="filter-container"></div>
-                <div class="flex justify-center gap-2 mb-6" id="tabs-container"></div>
-                <div id="leaderboard-content"></div>
-            </div>
-        </div>
-
-        <div id="view-chart" class="slide">
-            <div class="max-w-6xl mx-auto">
-                <h2 id="chart-period-title" class="text-2xl font-bold text-center mb-6">Análise de Depósitos</h2>
-                <div class="bg-gray-800/50 p-6 rounded-xl">
-                    <canvas id="mainChart" style="max-height: 400px;"></canvas>
+    <div id="command-center">
+        <!-- Main Content Area with Slides -->
+        <main id="slides-container" class="flex-grow relative">
+             <!-- SLIDE 1: Team Competition -->
+            <div id="view-teams" class="view-slide active">
+                <div class="w-full flex flex-col items-center">
+                    <header class="flex-shrink-0 mb-6 text-center">
+                        <h1 class="text-3xl font-bold text-white fade-in-child">Competição de Times</h1>
+                    </header>
+                    <div id="team-competition-content" class="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                         <!-- Team cards will be rendered here -->
+                    </div>
                 </div>
             </div>
+
+            <!-- SLIDE 2: Leaderboard -->
+            <div id="view-leaderboard" class="view-slide">
+                <div class="w-full h-full flex flex-col items-center">
+                    <header class="flex-shrink-0 mb-4 text-center">
+                        <div id="tabs-container" class="inline-flex bg-black/20 rounded-lg p-1 space-x-1 fade-in-child" style="animation-delay: 100ms;">
+                            <!-- Ranking tabs will be rendered here -->
+                        </div>
+                    </header>
+                    <div id="leaderboard-content" class="flex-grow w-full max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
+                         <!-- Leaderboard lists will be rendered here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SLIDE 3: Financial Chart -->
+            <div id="view-chart" class="view-slide">
+                <div class="w-full h-full flex flex-col items-center">
+                    <header class="flex-shrink-0 mb-4 text-center">
+                        <h1 class="text-3xl font-bold text-white fade-in-child">Análise Gráfica</h1>
+                        <p id="chart-period-title" class="text-gray-400 fade-in-child" style="animation-delay: 100ms;"></p>
+                    </header>
+                    <div id="chart-content" class="flex-grow relative fade-in-child w-full max-w-5xl h-[400px]" style="animation-delay: 200ms;">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Fixed Footer with Controls -->
+        <footer class="flex-shrink-0">
+            <div id="filter-container" class="mb-4 flex flex-wrap items-center justify-center gap-2">
+                <!-- Filtros serão inseridos aqui -->
+            </div>
+            <div id="nav-dots-container" class="nav-dots"></div>
+            <div class="absolute bottom-4 right-4 text-xs text-gray-500 flex items-center gap-3">
+                <span id="countdown-timer"></span>
+                <button id="refresh-btn" title="Atualizar Agora" class="p-1 rounded-full text-gray-400 hover:bg-white/10 hover:text-white transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                </button>
+            </div>
+            <div id="progress-bar-container" class="w-full h-1 bg-white/5 absolute bottom-0 left-0 rounded-b-3xl overflow-hidden">
+                <div id="progress-bar" style="width: 0%;"></div>
+            </div>
+        </footer>
+
+        <!-- Navigation Arrows -->
+        <button id="prev-slide" class="nav-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button id="next-slide" class="nav-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <div id="loader" class="absolute inset-0 flex items-center justify-center bg-black/80 rounded-3xl z-30">
+            <p class="text-gray-300 text-lg">Iniciando Command Center...</p>
         </div>
     </div>
 
     <script>
+    (() => {
         // --- CONFIG ---
         const urlDoWebhookN8N = 'https://aldeia0225.app.n8n.cloud/webhook/a83cd7e6-b8e4-49ea-b524-9780b993c9ad';
         const DATA_REFRESH_INTERVAL = 3600 * 1000;
@@ -97,12 +273,10 @@
             'ELITE SQUAD': ['Luan', 'Victor', 'G. Dias', 'G. Wagner', 'Ruan', 'Arthur', 'Laurence', 'Davi']
         };
         const BROKER_MAP = {
-            'Felipe Pauluk': 'Felipe', 'Felipe Enos': 'Felipe', 'João Lucas': 'João', 
-            'Gabriel Dias': 'G. Dias', 'Gabriel Wagner': 'G. Wagner',
-            'Luan Felipe': 'Luan', 'Victor Renan': 'Victor', 'Ruan Neuberger': 'Ruan', 
-            'Arthur De Oliveira': 'Arthur', 'Laurence Dias': 'Laurence', 
-            'Davi Dias do Nascimento': 'Davi', 'Allison Moreira': 'Allison', 
-            'Otavio': 'Otavio', 'Raul': 'Raul', 'Natan': 'Natan', 'Lucas Vinicius': 'Lucas'
+            'Felipe Pauluk': 'Felipe', 'Felipe Enos': 'Felipe', 'João Lucas': 'João', 'Gabriel Dias': 'G. Dias', 'Gabriel Wagner': 'G. Wagner',
+            'Luan Felipe': 'Luan', 'Victor Renan': 'Victor', 'Ruan Neuberger': 'Ruan', 'Arthur De Oliveira': 'Arthur',
+            'Laurence Dias': 'Laurence', 'Davi Dias do Nascimento': 'Davi', 'Allison Moreira': 'Allison', 'Otavio': 'Otavio', 'Raul': 'Raul', 'Natan': 'Natan',
+            'Lucas Vinicius': 'Lucas'
         };
 
         // --- STATE ---
@@ -137,7 +311,7 @@
         const getTeamByBroker = (brokerName) => { const shortName = BROKER_MAP[brokerName] || brokerName; for (const team in TEAMS) if (TEAMS[team].includes(shortName)) return team; return 'Sem Time'; };
         const parseDate = (dateStr) => { 
             if (!dateStr || typeof dateStr !== 'string') return null; 
-            // Handle YYYY-MM-DD format
+            // Handle YYYY-MM-DD format from webhook
             if (dateStr.includes('-')) {
                 const parts = dateStr.split('-');
                 if (parts.length === 3) return new Date(parts[0], parts[1] - 1, parts[2]);
@@ -147,7 +321,44 @@
             if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]); 
             return null; 
         };
-
+        
+        // --- VIEW & SLIDE LOGIC ---
+        function showView(index, isManual = false) {
+            DOM.slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
+            document.querySelectorAll('.nav-dot').forEach((dot, i) => dot.classList.toggle('active', i === index));
+            currentViewIndex = index;
+            if (isManual) {
+                clearTimeout(rotationTimeoutId);
+                cancelAnimationFrame(animationFrameId);
+                rotationRemainingTime = VIEW_ROTATION_INTERVAL;
+                if (!isPaused) startRotation();
+            }
+        }
+        function nextView(isManual = false) { showView((currentViewIndex + 1) % views.length, isManual); }
+        function prevView() { showView((currentViewIndex - 1 + views.length) % views.length, true); }
+        
+        function updateProgressBar() {
+            if (isPaused) return;
+            const elapsedTime = Date.now() - rotationStartTime;
+            const progress = (elapsedTime / rotationRemainingTime) * 100;
+            DOM.progressBar.style.width = `${Math.min(progress, 100)}%`;
+            animationFrameId = requestAnimationFrame(updateProgressBar);
+        }
+        
+        function startRotation() {
+            if (isPaused) return;
+            rotationStartTime = Date.now();
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(updateProgressBar);
+            rotationTimeoutId = setTimeout(() => {
+                nextView();
+                rotationRemainingTime = VIEW_ROTATION_INTERVAL;
+                startRotation();
+            }, rotationRemainingTime);
+        }
+        function pauseRotation() { if (isPaused) return; isPaused = true; clearTimeout(rotationTimeoutId); cancelAnimationFrame(animationFrameId); const elapsedTime = Date.now() - rotationStartTime; rotationRemainingTime -= elapsedTime; }
+        function resumeRotation() { if (!isPaused) return; isPaused = false; startRotation(); }
+        
         // --- DATA PROCESSING ---
         function processData(data, selectedPeriod) {
             const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); const startOfWeek = new Date(today); startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
@@ -161,7 +372,6 @@
                     }
                 });
         }
-        
         function calculateRankings(data) {
             const summary = data.reduce((acc, item) => { 
                 const shortName = BROKER_MAP[getValue(item, 'Nome')] || getValue(item, 'Nome'); 
@@ -175,6 +385,24 @@
             const allBrokers = Object.values(summary); const valueRanking = [...allBrokers].sort((a, b) => b.totalDeposito - a.totalDeposito); const activationRanking = [...allBrokers].sort((a, b) => b.activationCount - a.activationCount); const maxDeposito = Math.max(...valueRanking.map(b => b.totalDeposito), 1); const maxActivations = Math.max(...activationRanking.map(b => b.activationCount), 1); allBrokers.forEach(broker => { broker.generalScore = ((broker.totalDeposito / maxDeposito) * 0.6) + ((broker.activationCount / maxActivations) * 0.4); }); const generalRanking = allBrokers.sort((a, b) => b.generalScore - a.generalScore);
             return { valueRanking, activationRanking, generalRanking };
         }
+        
+        // --- RENDER FUNCTIONS ---
+        function renderAll() {
+            const periodText = document.querySelector(`.filter-btn[data-period="${currentPeriod}"]`)?.textContent || 'Período Atual';
+            const filteredData = processData(rawData, currentPeriod);
+            const rankings = calculateRankings(filteredData);
+            
+            DOM.chartPeriodTitle.textContent = periodText;
+            renderTeamCompetition(filteredData);
+            let rankingData = rankings.valueRanking;
+            if (currentRankingType === 'activation') rankingData = rankings.activationRanking;
+            else if (currentRankingType === 'general') rankingData = rankings.generalRanking;
+            
+            renderLeaderboard(rankingData, currentRankingType);
+            renderAnalysisChart(filteredData);
+            updatePreviousRankings(rankings);
+        }
+        function updatePreviousRankings(rankings) { Object.keys(rankings).forEach(type => { const rankMap = new Map(rankings[type].map((b, i) => [b.brokerName, i + 1])); previousRankings[type] = rankMap; }); }
 
         function renderTeamCompetition(data) {
             const kpis = data.reduce((acc, item) => {
@@ -210,58 +438,51 @@
                 </div>
             `;
         }
-
-        function renderLeaderboard(data) {
-            const rankings = calculateRankings(data);
-            const currentRanking = rankings[`${currentRankingType}Ranking`];
-            const getRankChange = (brokerName, currentPos) => {
-                const prevRanking = previousRankings[`${currentRankingType}Ranking`] || [];
-                const prevPos = prevRanking.findIndex(b => b.brokerName === brokerName);
-                if (prevPos === -1) return { change: 'new', text: 'NOVO' };
-                const diff = prevPos - currentPos;
-                if (diff > 0) return { change: 'up', text: `+${diff}` };
-                if (diff < 0) return { change: 'down', text: `${diff}` };
-                return { change: 'same', text: '=' };
-            };
-
-            DOM.leaderboardContent.innerHTML = `
-                <div class="bg-gray-800/30 rounded-xl p-6">
-                    <h3 class="text-xl font-bold mb-4 text-center">
-                        Ranking - ${currentRankingType === 'value' ? 'Depósitos' : currentRankingType === 'activation' ? 'Ativações' : 'Geral'}
-                    </h3>
-                    <div class="space-y-3">
-                        ${currentRanking.map((broker, index) => {
-                            const rankChange = getRankChange(broker.brokerName, index);
-                            const teamColor = broker.team === 'DOLLAR GODS' ? 'text-blue-400' : broker.team === 'ELITE SQUAD' ? 'text-teal-400' : 'text-gray-400';
-                            return `
-                                <div class="broker-item flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
-                                    <div class="flex items-center gap-4">
-                                        <div class="text-2xl font-bold text-gray-400 w-8">${index + 1}°</div>
-                                        <div>
-                                            <p class="font-semibold text-white">${broker.brokerName}</p>
-                                            <p class="text-sm ${teamColor}">${broker.team}</p>
-                                        </div>
-                                    </div>
-                                    <div class="text-right flex items-center gap-3">
-                                        <div>
-                                            <p class="font-bold text-white">
-                                                ${currentRankingType === 'value' ? formatCurrency(broker.totalDeposito) : 
-                                                  currentRankingType === 'activation' ? `${broker.activationCount} ativações` : 
-                                                  `${(broker.generalScore * 100).toFixed(1)} pts`}
-                                            </p>
-                                            <p class="text-sm text-gray-400">
-                                                ${formatCurrency(broker.totalDeposito)} • ${broker.activationCount} ativações
-                                            </p>
-                                        </div>
-                                        <span class="rank-change rank-${rankChange.change}">${rankChange.text}</span>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-            `;
+        
+        function renderSingleRanking(title, data, rankingType, isOverall = false) {
+             let contentHTML = `<div class="min-h-0 flex flex-col fade-in-child">
+                <h3 class="text-xl font-bold text-white mb-4 text-center">${title}</h3>`;
+             if (data.length === 0) {
+                 contentHTML += `<div class="bg-black/20 rounded-xl flex-grow flex items-center justify-center"><p class="text-gray-500">Nenhum dado.</p></div></div>`;
+             } else {
+                 let listHTML = '<div class="space-y-2 overflow-y-auto flex-grow pr-2 ranking-list">';
+                 data.forEach((broker, index) => {
+                     const rank = index + 1;
+                     const prevRank = previousRankings[rankingType]?.get(broker.brokerName);
+                     let rankIndicator = '<span class="rank-stable text-lg w-6 text-center">-</span>';
+                     let highlightClass = '';
+                     if (prevRank) { 
+                         if (rank < prevRank) rankIndicator = '<span class="rank-up text-lg w-6 text-center">▲</span>'; 
+                         else if (rank > prevRank) rankIndicator = '<span class="rank-down text-lg w-6 text-center">▼</span>'; 
+                         if (rank !== prevRank) highlightClass = 'highlight-change'; 
+                     }
+                     let valueText = (rankingType === 'value') ? formatCurrency(broker.totalDeposito) : (rankingType === 'activation') ? `${broker.activationCount} Ativações` : `${broker.generalScore.toFixed(2)} pts`;
+                     const initials = broker.brokerName.split(' ').map(n => n[0]).join('').substring(0,2);
+                     const teamColorClass = isOverall ? (broker.team === 'DOLLAR GODS' ? 'avatar-team-dg' : 'avatar-team-es') : '';
+                     listHTML += `<div class="flex items-center bg-black/20 p-2 rounded-xl transition duration-300 ${highlightClass}">
+                         <span class="text-md font-bold text-gray-400 w-8 text-center">${rank}º</span>
+                         <div class="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center font-bold text-sm text-white mx-2 border-2 avatar-ring ${rank <= 3 && isOverall ? `podium-${rank}`: ''} ${teamColorClass}">${initials}</div>
+                         <span class="font-semibold text-gray-200 flex-1 truncate">${broker.brokerName}</span>
+                         ${rankIndicator}
+                         <span class="text-sm font-semibold text-gray-300 ml-2 w-32 text-right">${valueText}</span>
+                     </div>`;
+                 });
+                 listHTML += '</div>';
+                 contentHTML += listHTML + '</div>';
+             }
+             return contentHTML;
         }
+
+        function renderLeaderboard(rankingData, rankingType) {
+            const dollarGodsData = rankingData.filter(b => b.team === 'DOLLAR GODS');
+            const eliteSquadData = rankingData.filter(b => b.team === 'ELITE SQUAD');
+
+            DOM.leaderboardContent.innerHTML = 
+                renderSingleRanking('DOLLAR GODS', dollarGodsData, rankingType) +
+                renderSingleRanking('RANKING GERAL', rankingData, rankingType, true) +
+                renderSingleRanking('ELITE SQUAD', eliteSquadData, rankingType);
+        }
+
 
         function renderAnalysisChart(data) {
              const summary = data.reduce((acc, item) => {
@@ -296,6 +517,13 @@
                 }
             });
         }
+        
+        // --- INITIALIZATION ---
+        function initialize() {
+            DOM.loader.textContent = 'Buscando dados iniciais...';
+            fetchDataAndUpdate(true);
+            dataRefreshIntervalId = setInterval(() => fetchDataAndUpdate(false), DATA_REFRESH_INTERVAL);
+        }
 
         function populateFilters(data) {
             const months = new Set();
@@ -317,129 +545,21 @@
         }
 
         function updateActiveFiltersAndTabs() {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.period === currentPeriod);
-            });
-            document.querySelectorAll('.ranking-tab').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.ranking === currentRankingType);
-            });
-            document.querySelectorAll('.nav-dot').forEach((dot, i) => {
-                dot.classList.toggle('active', i === currentViewIndex);
-            });
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('filter-btn-active', btn.dataset.period === currentPeriod));
+            document.querySelectorAll('.ranking-tab').forEach(btn => btn.classList.toggle('filter-btn-active', btn.dataset.ranking === currentRankingType));
         }
-
-        function updatePreviousRankings(rankings) {
-            previousRankings = JSON.parse(JSON.stringify(rankings));
-        }
-
-        function renderAll() {
-            const filteredData = processData(rawData, currentPeriod);
-            renderTeamCompetition(filteredData);
-            renderLeaderboard(filteredData);
-            renderAnalysisChart(filteredData);
-            
-            const periodText = currentPeriod === 'all' ? 'Geral' : 
-                              currentPeriod === 'today' ? 'Hoje' : 
-                              currentPeriod === 'this_week' ? 'Esta Semana' : 
-                              document.querySelector(`[data-period="${currentPeriod}"]`)?.textContent || 'Período Selecionado';
-            DOM.chartPeriodTitle.textContent = `Análise de Depósitos - ${periodText}`;
-        }
-
-        function showView(index) {
-            DOM.slides.forEach((slide, i) => {
-                slide.classList.toggle('active', i === index);
-            });
-            currentViewIndex = index;
-            updateActiveFiltersAndTabs();
-        }
-
-        function startRotation() {
-            if (isPaused) return;
-            rotationStartTime = Date.now();
-            DOM.progressBar.style.width = '0%';
-            DOM.progressBar.style.transition = `width ${VIEW_ROTATION_INTERVAL}ms linear`;
-            
-            const animate = () => {
-                if (isPaused) return;
-                const elapsed = Date.now() - rotationStartTime;
-                const progress = Math.min((elapsed / VIEW_ROTATION_INTERVAL) * 100, 100);
-                DOM.progressBar.style.width = `${progress}%`;
-                
-                if (elapsed >= VIEW_ROTATION_INTERVAL) {
-                    showView((currentViewIndex + 1) % views.length);
-                    startRotation();
-                } else {
-                    animationFrameId = requestAnimationFrame(animate);
-                }
-            };
-            
-            animationFrameId = requestAnimationFrame(animate);
-        }
-
-        function pauseRotation() {
-            isPaused = true;
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-            }
-            DOM.progressBar.style.transition = 'none';
-        }
-
-        function resumeRotation() {
-            isPaused = false;
-            startRotation();
-        }
-
+        
         function setupEventListeners() {
-            DOM.filterContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('filter-btn')) {
-                    currentPeriod = e.target.dataset.period;
-                    updateActiveFiltersAndTabs();
-                    renderAll();
-                }
-            });
-
-            DOM.tabsContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('ranking-tab')) {
-                    currentRankingType = e.target.dataset.ranking;
-                    updateActiveFiltersAndTabs();
-                    renderAll();
-                }
-            });
-
-            DOM.dotsContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('nav-dot')) {
-                    const index = parseInt(e.target.dataset.index);
-                    showView(index);
-                    pauseRotation();
-                    setTimeout(resumeRotation, 5000);
-                }
-            });
-
-            DOM.prevBtn.addEventListener('click', () => {
-                const newIndex = currentViewIndex === 0 ? views.length - 1 : currentViewIndex - 1;
-                showView(newIndex);
-                pauseRotation();
-                setTimeout(resumeRotation, 5000);
-            });
-
-            DOM.nextBtn.addEventListener('click', () => {
-                const newIndex = (currentViewIndex + 1) % views.length;
-                showView(newIndex);
-                pauseRotation();
-                setTimeout(resumeRotation, 5000);
-            });
-
-            DOM.refreshBtn.addEventListener('click', () => {
-                fetchDataAndUpdate(false);
-            });
-
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) {
-                    pauseRotation();
-                } else {
-                    resumeRotation();
-                }
-            });
+            if (DOM.filterContainer) DOM.filterContainer.addEventListener('click', e => { if (e.target.matches('.filter-btn')) { currentPeriod = e.target.dataset.period; updateActiveFiltersAndTabs(); renderAll(); } });
+            if (DOM.tabsContainer) DOM.tabsContainer.addEventListener('click', e => { if (e.target.matches('.ranking-tab')) { currentRankingType = e.target.dataset.ranking; updateActiveFiltersAndTabs(); renderAll(); } });
+            if (DOM.dotsContainer) DOM.dotsContainer.addEventListener('click', e => { if (e.target.matches('.nav-dot')) { showView(parseInt(e.target.dataset.index), true); } });
+            if (DOM.nextBtn) DOM.nextBtn.addEventListener('click', () => nextView(true));
+            if (DOM.prevBtn) DOM.prevBtn.addEventListener('click', prevView);
+            if (DOM.refreshBtn) DOM.refreshBtn.addEventListener('click', () => fetchDataAndUpdate(false));
+            if (DOM.commandCenter) {
+                DOM.commandCenter.addEventListener('mouseenter', pauseRotation);
+                DOM.commandCenter.addEventListener('mouseleave', resumeRotation);
+            }
         }
 
         async function fetchDataAndUpdate(isInitial) {
@@ -448,13 +568,7 @@
                 const response = await fetch(urlDoWebhookN8N); if (!response.ok) throw new Error("Network error");
                 const result = await response.json(); const fullRawData = (Array.isArray(result) && result[0]?.json) ? result[0].json : result;
                 if (!Array.isArray(fullRawData)) throw new Error("Invalid data format");
-                rawData = fullRawData.filter(item => { 
-                    const date = parseDate(getValue(item, 'Data')); 
-                    if (!date) return false; 
-                    const year = date.getFullYear(); 
-                    const month = date.getMonth(); 
-                    return year > 2025 || (year === 2025 && month >= 6); // July 2025 = month 6 (0-indexed)
-                });
+                rawData = fullRawData.filter(item => { const date = parseDate(getValue(item, 'Data')); if (!date) return false; const year = date.getFullYear(); const month = date.getMonth(); return year > 2025 || (year === 2025 && month >= 6); });
                 
                 if (isInitial) {
                     populateFilters(rawData);
@@ -469,7 +583,6 @@
              
              if (isInitial) { 
                  DOM.loader.style.display = 'none'; 
-                 DOM.commandCenter.style.display = 'block';
                  setupEventListeners(); 
                  showView(0); 
                  startRotation(); 
@@ -487,12 +600,8 @@
              countdownIntervalId = setInterval(updateTimer, 1000);
         }
 
-        function initialize() {
-            fetchDataAndUpdate(true);
-            dataRefreshIntervalId = setInterval(() => fetchDataAndUpdate(false), DATA_REFRESH_INTERVAL);
-        }
-
         initialize();
+    })();
     </script>
 </body>
 </html>
