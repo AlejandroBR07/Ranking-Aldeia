@@ -52,7 +52,7 @@
 
         #command-center {
             width: 100%;
-            max-width: 1600px; /* Aumentado para acomodar 3 colunas */
+            max-width: 1600px;
             height: 90vh;
             max-height: 900px;
             background-color: var(--panel-bg);
@@ -126,7 +126,6 @@
         .avatar-team-dg { border-color: var(--team-dollar-gods); }
         .avatar-team-es { border-color: var(--team-elite-squad); }
 
-
         .rank-up { color: #22c55e; } .rank-down { color: #ef4444; } .rank-stable { color: #6b7280; }
         
         .nav-dots {
@@ -157,7 +156,6 @@
             50% { background-color: rgba(56, 189, 248, 0.2); }
         }
 
-        /* Scrollbar styles for ranking list */
         .ranking-list::-webkit-scrollbar { width: 4px; }
         .ranking-list::-webkit-scrollbar-track { background: transparent; }
         .ranking-list::-webkit-scrollbar-thumb { background-color: rgba(56, 189, 248, 0.5); border-radius: 20px; }
@@ -190,35 +188,28 @@
     <div id="animated-bg"></div>
 
     <div id="command-center">
-        <!-- Main Content Area with Slides -->
         <main id="slides-container" class="flex-grow relative">
-             <!-- SLIDE 1: Team Competition -->
             <div id="view-teams" class="view-slide active">
                 <div class="w-full flex flex-col items-center">
                     <header class="flex-shrink-0 mb-6 text-center">
                         <h1 class="text-3xl font-bold text-white fade-in-child">Competição de Times</h1>
                     </header>
                     <div id="team-competition-content" class="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                         <!-- Team cards will be rendered here -->
                     </div>
                 </div>
             </div>
 
-            <!-- SLIDE 2: Leaderboard -->
             <div id="view-leaderboard" class="view-slide">
                 <div class="w-full h-full flex flex-col items-center">
                     <header class="flex-shrink-0 mb-4 text-center">
                         <div id="tabs-container" class="inline-flex bg-black/20 rounded-lg p-1 space-x-1 fade-in-child" style="animation-delay: 100ms;">
-                            <!-- Ranking tabs will be rendered here -->
                         </div>
                     </header>
                     <div id="leaderboard-content" class="flex-grow w-full max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
-                         <!-- Leaderboard lists will be rendered here -->
                     </div>
                 </div>
             </div>
             
-            <!-- SLIDE 3: Financial Chart -->
             <div id="view-chart" class="view-slide">
                 <div class="w-full h-full flex flex-col items-center">
                     <header class="flex-shrink-0 mb-4 text-center">
@@ -232,10 +223,8 @@
             </div>
         </main>
 
-        <!-- Fixed Footer with Controls -->
         <footer class="flex-shrink-0">
             <div id="filter-container" class="mb-4 flex flex-wrap items-center justify-center gap-2">
-                <!-- Filtros serão inseridos aqui -->
             </div>
             <div id="nav-dots-container" class="nav-dots"></div>
             <div class="absolute bottom-4 right-4 text-xs text-gray-500 flex items-center gap-3">
@@ -249,7 +238,6 @@
             </div>
         </footer>
 
-        <!-- Navigation Arrows -->
         <button id="prev-slide" class="nav-arrow">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
@@ -264,21 +252,22 @@
 
     <script>
     (() => {
-        // --- CONFIG ---
-        const urlDoWebhookN8N = 'https://aldeia0225.app.n8n.cloud/webhook/84145381-3d59-4ebb-9c69-cb019dbab541';
+        // <CHANGE> Ajustado para trabalhar com os campos do webhook: Nome, Validado?, Valor Depósito, Data, Ativação?
+        const urlDoWebhookN8N = 'https://aldeia0225.app.n8n.cloud/webhook/a83cd7e6-b8e4-49ea-b524-9780b993c9ad';
         const DATA_REFRESH_INTERVAL = 3600 * 1000;
         const VIEW_ROTATION_INTERVAL = 15 * 1000;
         const TEAMS = {
-            'DOLLAR GODS': ['Felipe', 'Natan', 'Allison', 'João', 'Raul', 'Otavio'],
-            'ELITE SQUAD': ['Luan', 'Victor', 'G. Dias', 'G. Wagner', 'Ruan', 'Arthur', 'Laurence', 'Davi']
+            'DOLLAR GODS': ['Felipe Pauluk', 'Natan', 'Allison', 'João', 'Raul', 'Otavio', 'Lucas Vinicius'],
+            'ELITE SQUAD': ['Luan', 'Victor', 'Gabriel Dias', 'Gabriel Wagner', 'Ruan', 'Arthur', 'Laurence', 'Davi']
         };
+        // <CHANGE> Mapeamento atualizado para os nomes que vêm do webhook
         const BROKER_MAP = {
-            'Felipe Enos': 'Felipe', 'João Lucas': 'João', 'Gabriel Dias': 'G. Dias', 'Gabriel Wagner': 'G. Wagner',
+            'Felipe Pauluk': 'Felipe', 'João Lucas': 'João', 'Gabriel Dias': 'G. Dias', 'Gabriel Wagner': 'G. Wagner',
             'Luan Felipe': 'Luan', 'Victor Renan': 'Victor', 'Ruan Neuberger': 'Ruan', 'Arthur De Oliveira': 'Arthur',
-            'Laurence Dias': 'Laurence', 'Davi Dias do Nascimento': 'Davi', 'Allison Moreira': 'Allison', 'Otavio': 'Otavio', 'Raul': 'Raul', 'Natan': 'Natan'
+            'Laurence Dias': 'Laurence', 'Davi Dias do Nascimento': 'Davi', 'Allison Moreira': 'Allison', 
+            'Otavio': 'Otavio', 'Raul': 'Raul', 'Natan': 'Natan', 'Lucas Vinicius': 'Lucas'
         };
 
-        // --- STATE ---
         let rawData = [], mainChartInstance = null;
         let dataRefreshIntervalId, countdownIntervalId, rotationTimeoutId, animationFrameId;
         let rotationStartTime, rotationRemainingTime = VIEW_ROTATION_INTERVAL;
@@ -303,14 +292,40 @@
             nextBtn: document.getElementById('next-slide'),
         };
         
-        // --- HELPERS ---
+        // <CHANGE> Funções helper atualizadas para trabalhar com os novos campos
         const getValue = (item, ...keys) => { for (const key of keys) if (item?.[key] != null) return item[key]; return ''; };
-        const parseCurrency = (value) => { if (typeof value === 'number') return value; if (typeof value === 'string' && value.trim() !== '') return parseFloat(value.replace(/[^\d.,-]/g, '').replace(/\./g, '').replace(',', '.')) || 0; return 0; };
-        const formatCurrency = (value) => value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-        const getTeamByBroker = (brokerName) => { const shortName = BROKER_MAP[brokerName] || brokerName; for (const team in TEAMS) if (TEAMS[team].includes(shortName)) return team; return 'Sem Time'; };
-        const parseDate = (dateStr) => { if (!dateStr || typeof dateStr !== 'string') return null; const parts = dateStr.split('/'); if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]); return null; };
+        const parseCurrency = (value) => { 
+            if (typeof value === 'number') return value; 
+            if (typeof value === 'string' && value.trim() !== '') {
+                return parseFloat(value.replace(/[^\d.,-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+            }
+            return 0; 
+        };
+        const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const getTeamByBroker = (brokerName) => { 
+            const shortName = BROKER_MAP[brokerName] || brokerName; 
+            for (const team in TEAMS) {
+                if (TEAMS[team].some(member => member === brokerName || member === shortName)) {
+                    return team;
+                }
+            }
+            return 'Sem Time'; 
+        };
+        // <CHANGE> Função de parse de data atualizada para formato brasileiro DD/MM/YYYY
+        const parseDate = (dateStr) => { 
+            if (!dateStr || typeof dateStr !== 'string') return null; 
+            const parts = dateStr.split('-'); // Formato YYYY-MM-DD
+            if (parts.length === 3) {
+                return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            }
+            // Tenta formato DD/MM/YYYY também
+            const partsBR = dateStr.split('/');
+            if (partsBR.length === 3) {
+                return new Date(parseInt(partsBR[2]), parseInt(partsBR[1]) - 1, parseInt(partsBR[0]));
+            }
+            return null; 
+        };
         
-        // --- VIEW & SLIDE LOGIC ---
         function showView(index, isManual = false) {
             DOM.slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
             document.querySelectorAll('.nav-dot').forEach((dot, i) => dot.classList.toggle('active', i === index));
@@ -347,25 +362,68 @@
         function pauseRotation() { if (isPaused) return; isPaused = true; clearTimeout(rotationTimeoutId); cancelAnimationFrame(animationFrameId); const elapsedTime = Date.now() - rotationStartTime; rotationRemainingTime -= elapsedTime; }
         function resumeRotation() { if (!isPaused) return; isPaused = false; startRotation(); }
         
-        // --- DATA PROCESSING ---
+        // <CHANGE> Função processData atualizada para usar o campo 'Data' do webhook
         function processData(data, selectedPeriod) {
-            const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); const startOfWeek = new Date(today); startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
-            return data.map(item => ({ ...item, parsedDate: parseDate(getValue(item, 'Data Ativação', 'Data Ativacao')), team: getTeamByBroker(getValue(item, 'Broker')) }))
-                .filter(item => {
-                    if (!item.parsedDate) return selectedPeriod === 'all'; const itemDate = new Date(item.parsedDate.getFullYear(), item.parsedDate.getMonth(), item.parsedDate.getDate());
-                    switch (selectedPeriod) {
-                        case 'all': return true; case 'today': return itemDate.getTime() === today.getTime(); case 'this_week': return itemDate >= startOfWeek && itemDate <= today;
-                        default: return `${item.parsedDate.getMonth()}_${item.parsedDate.getFullYear()}` === selectedPeriod;
-                    }
-                });
+            const now = new Date(); 
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); 
+            const startOfWeek = new Date(today); 
+            startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+            
+            return data.map(item => ({ 
+                ...item, 
+                parsedDate: parseDate(getValue(item, 'Data')), 
+                team: getTeamByBroker(getValue(item, 'Nome')) 
+            })).filter(item => {
+                if (!item.parsedDate) return selectedPeriod === 'all'; 
+                const itemDate = new Date(item.parsedDate.getFullYear(), item.parsedDate.getMonth(), item.parsedDate.getDate());
+                switch (selectedPeriod) {
+                    case 'all': return true; 
+                    case 'today': return itemDate.getTime() === today.getTime(); 
+                    case 'this_week': return itemDate >= startOfWeek && itemDate <= today;
+                    default: return `${item.parsedDate.getMonth()}_${item.parsedDate.getFullYear()}` === selectedPeriod;
+                }
+            });
         }
+        
+        // <CHANGE> Função calculateRankings atualizada para usar os novos campos do webhook
         function calculateRankings(data) {
-            const summary = data.reduce((acc, item) => { const shortName = BROKER_MAP[getValue(item, 'Broker')] || getValue(item, 'Broker'); if (!shortName) return acc; if (!acc[shortName]) acc[shortName] = { brokerName: shortName, team: item.team, totalDeposito: 0, activationCount: 0 }; acc[shortName].totalDeposito += parseCurrency(getValue(item, 'Depósito', 'Deposito')); const ativacao = getValue(item, 'Ativação', 'Ativacao', 'CheckMark'); if (['Ativação', 'Validado', 'Sim'].includes(ativacao)) acc[shortName].activationCount++; return acc; }, {});
-            const allBrokers = Object.values(summary); const valueRanking = [...allBrokers].sort((a, b) => b.totalDeposito - a.totalDeposito); const activationRanking = [...allBrokers].sort((a, b) => b.activationCount - a.activationCount); const maxDeposito = Math.max(...valueRanking.map(b => b.totalDeposito), 1); const maxActivations = Math.max(...activationRanking.map(b => b.activationCount), 1); allBrokers.forEach(broker => { broker.generalScore = ((broker.totalDeposito / maxDeposito) * 0.6) + ((broker.activationCount / maxActivations) * 0.4); }); const generalRanking = allBrokers.sort((a, b) => b.generalScore - a.generalScore);
+            const summary = data.reduce((acc, item) => { 
+                const brokerName = getValue(item, 'Nome');
+                const shortName = BROKER_MAP[brokerName] || brokerName; 
+                if (!shortName) return acc; 
+                if (!acc[shortName]) acc[shortName] = { 
+                    brokerName: shortName, 
+                    fullName: brokerName,
+                    team: item.team, 
+                    totalDeposito: 0, 
+                    activationCount: 0 
+                }; 
+                
+                // Usar 'Valor Depósito' do webhook
+                acc[shortName].totalDeposito += parseCurrency(getValue(item, 'Valor Depósito')); 
+                
+                // Usar 'Ativação?' do webhook - considerando 'Ativação' como ativado
+                const ativacao = getValue(item, 'Ativação?');
+                if (ativacao === 'Ativação') {
+                    acc[shortName].activationCount++;
+                }
+                
+                return acc; 
+            }, {});
+            
+            const allBrokers = Object.values(summary); 
+            const valueRanking = [...allBrokers].sort((a, b) => b.totalDeposito - a.totalDeposito); 
+            const activationRanking = [...allBrokers].sort((a, b) => b.activationCount - a.activationCount); 
+            const maxDeposito = Math.max(...valueRanking.map(b => b.totalDeposito), 1); 
+            const maxActivations = Math.max(...activationRanking.map(b => b.activationCount), 1); 
+            allBrokers.forEach(broker => { 
+                broker.generalScore = ((broker.totalDeposito / maxDeposito) * 0.6) + ((broker.activationCount / maxActivations) * 0.4); 
+            }); 
+            const generalRanking = allBrokers.sort((a, b) => b.generalScore - a.generalScore);
+            
             return { valueRanking, activationRanking, generalRanking };
         }
         
-        // --- RENDER FUNCTIONS ---
         function renderAll() {
             const periodText = document.querySelector(`.filter-btn[data-period="${currentPeriod}"]`)?.textContent || 'Período Atual';
             const filteredData = processData(rawData, currentPeriod);
@@ -383,11 +441,14 @@
         }
         function updatePreviousRankings(rankings) { Object.keys(rankings).forEach(type => { const rankMap = new Map(rankings[type].map((b, i) => [b.brokerName, i + 1])); previousRankings[type] = rankMap; }); }
 
+        // <CHANGE> Função renderTeamCompetition atualizada para usar os novos campos
         function renderTeamCompetition(data) {
             const kpis = data.reduce((acc, item) => {
                 if (!acc[item.team]) acc[item.team] = { totalDeposito: 0, activationCount: 0 };
-                acc[item.team].totalDeposito += parseCurrency(getValue(item, 'Depósito', 'Deposito'));
-                if (['Ativação', 'Validado', 'Sim'].includes(getValue(item, 'Ativação', 'Ativacao', 'CheckMark'))) acc[item.team].activationCount++;
+                acc[item.team].totalDeposito += parseCurrency(getValue(item, 'Valor Depósito'));
+                if (getValue(item, 'Ativação?') === 'Ativação') {
+                    acc[item.team].activationCount++;
+                }
                 return acc;
             }, {});
             const dg = kpis['DOLLAR GODS'] || { totalDeposito: 0, activationCount: 0 };
@@ -462,13 +523,17 @@
                 renderSingleRanking('ELITE SQUAD', eliteSquadData, rankingType);
         }
 
-
+        // <CHANGE> Função renderAnalysisChart atualizada para usar os novos campos
         function renderAnalysisChart(data) {
              const summary = data.reduce((acc, item) => {
-                const shortName = BROKER_MAP[getValue(item, 'Broker')] || getValue(item, 'Broker');
+                const brokerName = getValue(item, 'Nome');
+                const shortName = BROKER_MAP[brokerName] || brokerName;
                 if(!acc[shortName]) acc[shortName] = { brokerName: shortName, totalDeposito: 0, depositoCount: 0 };
-                const depositoValor = parseCurrency(getValue(item, 'Depósito', 'Deposito'));
-                if (depositoValor > 0) { acc[shortName].totalDeposito += depositoValor; acc[shortName].depositoCount++; }
+                const depositoValor = parseCurrency(getValue(item, 'Valor Depósito'));
+                if (depositoValor > 0) { 
+                    acc[shortName].totalDeposito += depositoValor; 
+                    acc[shortName].depositoCount++; 
+                }
                 return acc;
             }, {});
             const chartData = Object.values(summary).sort((a,b) => b.totalDeposito - a.totalDeposito).slice(0, 15);
@@ -497,16 +562,23 @@
             });
         }
         
-        // --- INITIALIZATION ---
         function initialize() {
             DOM.loader.textContent = 'Buscando dados iniciais...';
             fetchDataAndUpdate(true);
             dataRefreshIntervalId = setInterval(() => fetchDataAndUpdate(false), DATA_REFRESH_INTERVAL);
         }
 
+        // <CHANGE> Função populateFilters atualizada para usar o campo 'Data'
         function populateFilters(data) {
             const months = new Set();
-            data.forEach(item => { const date = parseDate(getValue(item, 'Data Ativação', 'Data Ativacao')); if (date) { const my = `${date.getMonth()}_${date.getFullYear()}`; const mn = date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' }); months.add(JSON.stringify({ value: my, text: mn.charAt(0).toUpperCase() + mn.slice(1) })); } });
+            data.forEach(item => { 
+                const date = parseDate(getValue(item, 'Data')); 
+                if (date) { 
+                    const my = `${date.getMonth()}_${date.getFullYear()}`; 
+                    const mn = date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' }); 
+                    months.add(JSON.stringify({ value: my, text: mn.charAt(0).toUpperCase() + mn.slice(1) })); 
+                } 
+            });
             const sortedMonths = Array.from(months).map(m => JSON.parse(m)).sort((a, b) => { const [am, ay] = a.value.split('_'); const [bm, by] = b.value.split('_'); return (by - ay) || (bm - am); });
             
             DOM.filterContainer.innerHTML = `
@@ -544,21 +616,37 @@
         async function fetchDataAndUpdate(isInitial) {
              DOM.countdownTimer.textContent = "Atualizando...";
              try {
-                const response = await fetch(urlDoWebhookN8N); if (!response.ok) throw new Error("Network error");
-                const result = await response.json(); const fullRawData = (Array.isArray(result) && result[0]?.json) ? result[0].json : result;
+                const response = await fetch(urlDoWebhookN8N); 
+                if (!response.ok) throw new Error("Network error");
+                const result = await response.json(); 
+                // <CHANGE> Ajustado para trabalhar diretamente com o array de dados do webhook
+                const fullRawData = Array.isArray(result) ? result : [result];
                 if (!Array.isArray(fullRawData)) throw new Error("Invalid data format");
-                rawData = fullRawData.filter(item => { const date = parseDate(getValue(item, 'Data Ativação', 'Data Ativacao')); if (!date) return false; const year = date.getFullYear(); const month = date.getMonth(); return year > 2025 || (year === 2025 && month >= 6); });
+                
+                // <CHANGE> Filtro atualizado para usar o campo 'Data' e considerar dados de 2025
+                rawData = fullRawData.filter(item => { 
+                    const date = parseDate(getValue(item, 'Data')); 
+                    if (!date) return false; 
+                    const year = date.getFullYear(); 
+                    return year >= 2025; 
+                });
                 
                 if (isInitial) {
                     populateFilters(rawData);
-                    const julyOption = document.querySelector('[data-period="6_2025"]');
-                    currentPeriod = julyOption ? "6_2025" : "all";
+                    // <CHANGE> Definir período padrão como 'all' se não houver dados específicos
+                    currentPeriod = "all";
                 }
                 updateActiveFiltersAndTabs();
                 const rankings = calculateRankings(processData(rawData, currentPeriod));
-                if (Object.keys(previousRankings).length === 0) { updatePreviousRankings(rankings); }
+                if (Object.keys(previousRankings).length === 0) { 
+                    updatePreviousRankings(rankings); 
+                }
                 renderAll();
-             } catch(error) { console.error("Fetch failed:", error); DOM.loader.textContent = 'Erro ao carregar dados.'; return; }
+             } catch(error) { 
+                 console.error("Fetch failed:", error); 
+                 DOM.loader.textContent = 'Erro ao carregar dados.'; 
+                 return; 
+             }
              
              if (isInitial) { 
                  DOM.loader.style.display = 'none'; 
@@ -572,7 +660,8 @@
              const updateTimer = () => {
                  secondsLeft--;
                  if(secondsLeft < 0) secondsLeft = 0;
-                 const minutes = Math.floor(secondsLeft / 60); const seconds = secondsLeft % 60;
+                 const minutes = Math.floor(secondsLeft / 60); 
+                 const seconds = secondsLeft % 60;
                  DOM.countdownTimer.textContent = `Atualiza em ${minutes}m ${seconds.toString().padStart(2, '0')}s`;
              };
              updateTimer();
