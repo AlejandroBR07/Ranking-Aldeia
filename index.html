@@ -1,4 +1,94 @@
-// --- CONFIG ---
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competição de Times - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        .fade-in-child { opacity: 0; animation: fadeInUp 0.6s ease-out forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .winning-team { transform: scale(1.02); box-shadow: 0 0 30px rgba(251, 191, 36, 0.3); }
+        .winning-team > div { border-color: rgba(251, 191, 36, 0.5) !important; }
+        .filter-btn { background: rgba(55, 65, 81, 0.5); color: #9ca3af; transition: all 0.3s; }
+        .filter-btn:hover, .filter-btn.active { background: #3b82f6; color: white; }
+        .ranking-tab { background: rgba(55, 65, 81, 0.5); color: #9ca3af; }
+        .ranking-tab:hover, .ranking-tab.active { background: #10b981; color: white; }
+        .nav-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(156, 163, 175, 0.5); cursor: pointer; transition: all 0.3s; }
+        .nav-dot.active { background: #3b82f6; transform: scale(1.2); }
+        .slide { display: none; opacity: 0; transition: opacity 0.5s ease-in-out; }
+        .slide.active { display: block; opacity: 1; }
+        #progress-bar { height: 4px; background: #3b82f6; transition: width 15s linear; }
+        .broker-item { transition: all 0.3s ease; }
+        .broker-item:hover { transform: translateX(5px); }
+        .rank-change { font-size: 0.75rem; padding: 2px 6px; border-radius: 12px; font-weight: bold; }
+        .rank-up { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .rank-down { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .rank-same { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
+    </style>
+</head>
+<body class="min-h-screen text-white">
+    <div id="loader" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p class="text-xl">Carregando dados...</p>
+        </div>
+    </div>
+
+    <div id="command-center" class="container mx-auto px-4 py-6 max-w-7xl" style="display: none;">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-teal-400 bg-clip-text text-transparent">
+                Competição de Times
+            </h1>
+            <div class="flex justify-center items-center gap-4 text-sm text-gray-400">
+                <span id="countdown-timer">Carregando...</span>
+                <button id="refresh-btn" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded-md transition">
+                    Atualizar
+                </button>
+            </div>
+        </header>
+
+        <div class="mb-6">
+            <div class="bg-gray-800 rounded-lg h-1 mb-4">
+                <div id="progress-bar" class="bg-blue-500 h-full rounded-lg" style="width: 0%;"></div>
+            </div>
+            <div class="flex justify-center gap-2 mb-4" id="nav-dots-container"></div>
+            <div class="flex justify-center gap-2">
+                <button id="prev-slide" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition">
+                    ← Anterior
+                </button>
+                <button id="next-slide" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition">
+                    Próximo →
+                </button>
+            </div>
+        </div>
+
+        <div id="view-teams" class="slide">
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto" id="team-competition-content"></div>
+        </div>
+
+        <div id="view-leaderboard" class="slide">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex flex-wrap justify-center gap-2 mb-6" id="filter-container"></div>
+                <div class="flex justify-center gap-2 mb-6" id="tabs-container"></div>
+                <div id="leaderboard-content"></div>
+            </div>
+        </div>
+
+        <div id="view-chart" class="slide">
+            <div class="max-w-6xl mx-auto">
+                <h2 id="chart-period-title" class="text-2xl font-bold text-center mb-6">Análise de Depósitos</h2>
+                <div class="bg-gray-800/50 p-6 rounded-xl">
+                    <canvas id="mainChart" style="max-height: 400px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIG ---
         const urlDoWebhookN8N = 'https://aldeia0225.app.n8n.cloud/webhook/a83cd7e6-b8e4-49ea-b524-9780b993c9ad';
         const DATA_REFRESH_INTERVAL = 3600 * 1000;
         const VIEW_ROTATION_INTERVAL = 15 * 1000;
@@ -58,11 +148,11 @@
             return null; 
         };
 
-
         // --- DATA PROCESSING ---
         function processData(data, selectedPeriod) {
             const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); const startOfWeek = new Date(today); startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
-            return data.map(item => ({ ...item, parsedDate: parseDate(getValue(item, 'Data')), team: getTeamByBroker(getValue(item, 'Nome')) }))
+            return data.filter(item => getValue(item, 'Validado?') === 'Validado')
+                .map(item => ({ ...item, parsedDate: parseDate(getValue(item, 'Data')), team: getTeamByBroker(getValue(item, 'Nome')) }))
                 .filter(item => {
                     if (!item.parsedDate) return selectedPeriod === 'all'; const itemDate = new Date(item.parsedDate.getFullYear(), item.parsedDate.getMonth(), item.parsedDate.getDate());
                     switch (selectedPeriod) {
@@ -71,6 +161,7 @@
                     }
                 });
         }
+        
         function calculateRankings(data) {
             const summary = data.reduce((acc, item) => { 
                 const shortName = BROKER_MAP[getValue(item, 'Nome')] || getValue(item, 'Nome'); 
@@ -84,7 +175,6 @@
             const allBrokers = Object.values(summary); const valueRanking = [...allBrokers].sort((a, b) => b.totalDeposito - a.totalDeposito); const activationRanking = [...allBrokers].sort((a, b) => b.activationCount - a.activationCount); const maxDeposito = Math.max(...valueRanking.map(b => b.totalDeposito), 1); const maxActivations = Math.max(...activationRanking.map(b => b.activationCount), 1); allBrokers.forEach(broker => { broker.generalScore = ((broker.totalDeposito / maxDeposito) * 0.6) + ((broker.activationCount / maxActivations) * 0.4); }); const generalRanking = allBrokers.sort((a, b) => b.generalScore - a.generalScore);
             return { valueRanking, activationRanking, generalRanking };
         }
-
 
         function renderTeamCompetition(data) {
             const kpis = data.reduce((acc, item) => {
@@ -121,6 +211,57 @@
             `;
         }
 
+        function renderLeaderboard(data) {
+            const rankings = calculateRankings(data);
+            const currentRanking = rankings[`${currentRankingType}Ranking`];
+            const getRankChange = (brokerName, currentPos) => {
+                const prevRanking = previousRankings[`${currentRankingType}Ranking`] || [];
+                const prevPos = prevRanking.findIndex(b => b.brokerName === brokerName);
+                if (prevPos === -1) return { change: 'new', text: 'NOVO' };
+                const diff = prevPos - currentPos;
+                if (diff > 0) return { change: 'up', text: `+${diff}` };
+                if (diff < 0) return { change: 'down', text: `${diff}` };
+                return { change: 'same', text: '=' };
+            };
+
+            DOM.leaderboardContent.innerHTML = `
+                <div class="bg-gray-800/30 rounded-xl p-6">
+                    <h3 class="text-xl font-bold mb-4 text-center">
+                        Ranking - ${currentRankingType === 'value' ? 'Depósitos' : currentRankingType === 'activation' ? 'Ativações' : 'Geral'}
+                    </h3>
+                    <div class="space-y-3">
+                        ${currentRanking.map((broker, index) => {
+                            const rankChange = getRankChange(broker.brokerName, index);
+                            const teamColor = broker.team === 'DOLLAR GODS' ? 'text-blue-400' : broker.team === 'ELITE SQUAD' ? 'text-teal-400' : 'text-gray-400';
+                            return `
+                                <div class="broker-item flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
+                                    <div class="flex items-center gap-4">
+                                        <div class="text-2xl font-bold text-gray-400 w-8">${index + 1}°</div>
+                                        <div>
+                                            <p class="font-semibold text-white">${broker.brokerName}</p>
+                                            <p class="text-sm ${teamColor}">${broker.team}</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right flex items-center gap-3">
+                                        <div>
+                                            <p class="font-bold text-white">
+                                                ${currentRankingType === 'value' ? formatCurrency(broker.totalDeposito) : 
+                                                  currentRankingType === 'activation' ? `${broker.activationCount} ativações` : 
+                                                  `${(broker.generalScore * 100).toFixed(1)} pts`}
+                                            </p>
+                                            <p class="text-sm text-gray-400">
+                                                ${formatCurrency(broker.totalDeposito)} • ${broker.activationCount} ativações
+                                            </p>
+                                        </div>
+                                        <span class="rank-change rank-${rankChange.change}">${rankChange.text}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
 
         function renderAnalysisChart(data) {
              const summary = data.reduce((acc, item) => {
@@ -156,7 +297,6 @@
             });
         }
 
-
         function populateFilters(data) {
             const months = new Set();
             data.forEach(item => { const date = parseDate(getValue(item, 'Data')); if (date) { const my = `${date.getMonth()}_${date.getFullYear()}`; const mn = date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' }); months.add(JSON.stringify({ value: my, text: mn.charAt(0).toUpperCase() + mn.slice(1) })); } });
@@ -176,6 +316,131 @@
             DOM.dotsContainer.innerHTML = views.map((_, i) => `<div class="nav-dot" data-index="${i}"></div>`).join('');
         }
 
+        function updateActiveFiltersAndTabs() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.period === currentPeriod);
+            });
+            document.querySelectorAll('.ranking-tab').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.ranking === currentRankingType);
+            });
+            document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentViewIndex);
+            });
+        }
+
+        function updatePreviousRankings(rankings) {
+            previousRankings = JSON.parse(JSON.stringify(rankings));
+        }
+
+        function renderAll() {
+            const filteredData = processData(rawData, currentPeriod);
+            renderTeamCompetition(filteredData);
+            renderLeaderboard(filteredData);
+            renderAnalysisChart(filteredData);
+            
+            const periodText = currentPeriod === 'all' ? 'Geral' : 
+                              currentPeriod === 'today' ? 'Hoje' : 
+                              currentPeriod === 'this_week' ? 'Esta Semana' : 
+                              document.querySelector(`[data-period="${currentPeriod}"]`)?.textContent || 'Período Selecionado';
+            DOM.chartPeriodTitle.textContent = `Análise de Depósitos - ${periodText}`;
+        }
+
+        function showView(index) {
+            DOM.slides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === index);
+            });
+            currentViewIndex = index;
+            updateActiveFiltersAndTabs();
+        }
+
+        function startRotation() {
+            if (isPaused) return;
+            rotationStartTime = Date.now();
+            DOM.progressBar.style.width = '0%';
+            DOM.progressBar.style.transition = `width ${VIEW_ROTATION_INTERVAL}ms linear`;
+            
+            const animate = () => {
+                if (isPaused) return;
+                const elapsed = Date.now() - rotationStartTime;
+                const progress = Math.min((elapsed / VIEW_ROTATION_INTERVAL) * 100, 100);
+                DOM.progressBar.style.width = `${progress}%`;
+                
+                if (elapsed >= VIEW_ROTATION_INTERVAL) {
+                    showView((currentViewIndex + 1) % views.length);
+                    startRotation();
+                } else {
+                    animationFrameId = requestAnimationFrame(animate);
+                }
+            };
+            
+            animationFrameId = requestAnimationFrame(animate);
+        }
+
+        function pauseRotation() {
+            isPaused = true;
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            DOM.progressBar.style.transition = 'none';
+        }
+
+        function resumeRotation() {
+            isPaused = false;
+            startRotation();
+        }
+
+        function setupEventListeners() {
+            DOM.filterContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('filter-btn')) {
+                    currentPeriod = e.target.dataset.period;
+                    updateActiveFiltersAndTabs();
+                    renderAll();
+                }
+            });
+
+            DOM.tabsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('ranking-tab')) {
+                    currentRankingType = e.target.dataset.ranking;
+                    updateActiveFiltersAndTabs();
+                    renderAll();
+                }
+            });
+
+            DOM.dotsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('nav-dot')) {
+                    const index = parseInt(e.target.dataset.index);
+                    showView(index);
+                    pauseRotation();
+                    setTimeout(resumeRotation, 5000);
+                }
+            });
+
+            DOM.prevBtn.addEventListener('click', () => {
+                const newIndex = currentViewIndex === 0 ? views.length - 1 : currentViewIndex - 1;
+                showView(newIndex);
+                pauseRotation();
+                setTimeout(resumeRotation, 5000);
+            });
+
+            DOM.nextBtn.addEventListener('click', () => {
+                const newIndex = (currentViewIndex + 1) % views.length;
+                showView(newIndex);
+                pauseRotation();
+                setTimeout(resumeRotation, 5000);
+            });
+
+            DOM.refreshBtn.addEventListener('click', () => {
+                fetchDataAndUpdate(false);
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    pauseRotation();
+                } else {
+                    resumeRotation();
+                }
+            });
+        }
 
         async function fetchDataAndUpdate(isInitial) {
              DOM.countdownTimer.textContent = "Atualizando...";
@@ -204,6 +469,7 @@
              
              if (isInitial) { 
                  DOM.loader.style.display = 'none'; 
+                 DOM.commandCenter.style.display = 'block';
                  setupEventListeners(); 
                  showView(0); 
                  startRotation(); 
@@ -221,4 +487,12 @@
              countdownIntervalId = setInterval(updateTimer, 1000);
         }
 
+        function initialize() {
+            fetchDataAndUpdate(true);
+            dataRefreshIntervalId = setInterval(() => fetchDataAndUpdate(false), DATA_REFRESH_INTERVAL);
+        }
+
         initialize();
+    </script>
+</body>
+</html>
