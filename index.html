@@ -3,29 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Command Center v10.2: Apex | Aldeia</title>
+    <title>Command Center v2.0: Competição de Times | Aldeia</title>
     
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN for charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
+        /* Updated CSS variables and styling to match the modern command center design */
         :root {
-            --bg-color: #0A0A0F;
-            --panel-bg: rgba(15, 18, 32, 0.5);
-            --border-color: rgba(56, 73, 117, 0.3);
-            --glow-color: #38BDF8;
-            --text-primary: #E5E7EB;
-            --text-secondary: #9CA3AF;
+            --bg-color-start: #020617; /* slate-950 */
+            --bg-color-end: #111827;    /* gray-900 */
+            --panel-bg: rgba(15, 23, 42, 0.6); /* slate-900 with opacity */
+            --border-color: rgba(59, 130, 246, 0.2); /* blue-500 with opacity */
+            --glow-color: #38bdf8; /* sky-400 */
+            --glow-color-end: #06b6d4; /* cyan-500 */
+            --text-primary: #f9fafb; /* gray-50 */
+            --text-secondary: #9ca3af; /* gray-400 */
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --bronze: #CD7F32;
             --team-dollar-gods: #FFD700;
             --team-elite-squad: #38BDF8;
         }
 
+        /* Base body styling */
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-color);
+            background: linear-gradient(135deg, var(--bg-color-start), var(--bg-color-end));
             overflow: hidden;
             display: flex;
             align-items: center;
@@ -33,16 +43,17 @@
             min-height: 100vh;
         }
 
+        /* Animated grid background */
         #animated-bg {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: -1;
             background-image: 
-                linear-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(56, 189, 248, 0.1) 1px, transparent 1px);
-            background-size: 60px 60px;
-            animation: grid-pan 80s linear infinite;
+                linear-gradient(rgba(56, 189, 248, 0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.07) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-pan 120s linear infinite;
         }
 
         @keyframes grid-pan {
@@ -50,20 +61,21 @@
             100% { background-position: 100% 100%; }
         }
 
+        /* Main command center panel styling */
         #command-center {
             width: 100%;
-            max-width: 1600px; /* Aumentado para acomodar 3 colunas */
+            max-width: 1600px;
             height: 90vh;
-            max-height: 900px;
+            max-height: 950px;
             background-color: var(--panel-bg);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-color);
             border-radius: 2rem;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 0 80px rgba(0, 0, 0, 0.6);
-            padding: 2rem;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5), 0 0 15px var(--glow-color), inset 0 0 10px rgba(56, 189, 248, 0.1);
+            padding: 1.5rem 2rem;
             opacity: 0;
             transform: scale(0.95);
             animation: fadeInPanel 1s ease-out forwards;
@@ -73,12 +85,13 @@
             to { opacity: 1; transform: scale(1); }
         }
 
+        /* Styling for content slides */
         .view-slide {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out;
+            transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
             transform: translateY(20px);
             display: flex;
             flex-direction: column;
@@ -86,49 +99,62 @@
             align-items: center;
             padding: 2rem 0;
         }
-        .view-slide.active { opacity: 1; visibility: visible; transform: translateY(0); }
+        .view-slide.active { 
+            opacity: 1; 
+            visibility: visible; 
+            transform: translateY(0); 
+        }
 
         @keyframes fadeInChild {
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .view-slide.active .fade-in-child { animation: fadeInChild 0.6s ease-out forwards; }
+        .view-slide.active .fade-in-child { 
+            animation: fadeInChild 0.6s ease-out forwards; 
+        }
         
+        /* Progress bar styling */
         #progress-bar {
             height: 100%;
-            background: var(--glow-color);
+            background: linear-gradient(90deg, var(--glow-color), var(--glow-color-end));
             transition: width 0.1s linear;
             box-shadow: 0 0 10px var(--glow-color);
             border-radius: 2px;
         }
         
+        /* Styling for filter and ranking buttons */
         .filter-btn, .ranking-tab {
             color: var(--text-secondary); 
             background-color: rgba(30, 41, 59, 0.6);
-            border: 1px solid transparent;
+            border: 1px solid var(--border-color);
             transition: all 0.3s ease;
         }
         .filter-btn:hover, .ranking-tab:hover {
             background-color: rgba(55, 65, 81, 0.8);
             color: var(--text-primary);
+            border-color: var(--glow-color);
         }
         .filter-btn-active {
-            background-color: var(--glow-color);
+            background: linear-gradient(90deg, var(--glow-color), var(--glow-color-end));
             color: #030712 !important;
-            font-weight: 600;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+            font-weight: 700;
+            border-color: transparent;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
         }
 
-        .podium-1 .avatar-ring { border-color: #FFD700; }
-        .podium-2 .avatar-ring { border-color: #C0C0C0; }
-        .podium-3 .avatar-ring { border-color: #CD7F32; }
+        /* Podium styling */
+        .podium-1 .avatar-ring { border-color: var(--gold); box-shadow: 0 0 10px var(--gold); }
+        .podium-2 .avatar-ring { border-color: var(--silver); box-shadow: 0 0 10px var(--silver); }
+        .podium-3 .avatar-ring { border-color: var(--bronze); box-shadow: 0 0 10px var(--bronze); }
         
         .avatar-team-dg { border-color: var(--team-dollar-gods); }
         .avatar-team-es { border-color: var(--team-elite-squad); }
 
-
-        .rank-up { color: #22c55e; } .rank-down { color: #ef4444; } .rank-stable { color: #6b7280; }
+        .rank-up { color: #22c55e; } 
+        .rank-down { color: #ef4444; } 
+        .rank-stable { color: #6b7280; }
         
+        /* Navigation dots styling */
         .nav-dots {
             position: absolute;
             bottom: 1.5rem; left: 50%;
@@ -143,7 +169,11 @@
             transition: all 0.3s ease;
         }
         .nav-dot:hover { background-color: rgba(255, 255, 255, 0.4); }
-        .nav-dot.active { background-color: var(--glow-color); transform: scale(1.2); box-shadow: 0 0 8px var(--glow-color); }
+        .nav-dot.active { 
+            background-color: var(--glow-color); 
+            transform: scale(1.2); 
+            box-shadow: 0 0 8px var(--glow-color); 
+        }
         
         .winning-team {
             transform: scale(1.03);
@@ -156,12 +186,16 @@
             0%, 100% { background-color: transparent; }
             50% { background-color: rgba(56, 189, 248, 0.2); }
         }
-
-        /* Scrollbar styles for ranking list */
+        
+        /* Custom scrollbar styles */
         .ranking-list::-webkit-scrollbar { width: 4px; }
         .ranking-list::-webkit-scrollbar-track { background: transparent; }
-        .ranking-list::-webkit-scrollbar-thumb { background-color: rgba(56, 189, 248, 0.5); border-radius: 20px; }
+        .ranking-list::-webkit-scrollbar-thumb { 
+            background-color: rgba(56, 189, 248, 0.5); 
+            border-radius: 20px; 
+        }
 
+        /* Navigation arrows styling */
         .nav-arrow {
             position: absolute;
             top: 50%;
@@ -169,11 +203,8 @@
             background: rgba(30, 41, 59, 0.6);
             border: 1px solid var(--border-color);
             border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
             cursor: pointer;
             transition: all 0.3s ease;
             opacity: 0;
@@ -181,25 +212,31 @@
             color: white;
         }
         #command-center:hover .nav-arrow { opacity: 1; }
-        .nav-arrow:hover { background-color: rgba(55, 65, 81, 0.8); border-color: var(--glow-color); }
+        .nav-arrow:hover { 
+            background-color: rgba(55, 65, 81, 0.8); 
+            border-color: var(--glow-color); 
+            box-shadow: 0 0 10px var(--glow-color); 
+        }
         #prev-slide { left: 0.5rem; }
         #next-slide { right: 0.5rem; }
     </style>
 </head>
 <body>
+    <!-- Animated background element -->
     <div id="animated-bg"></div>
 
+    <!-- Main Command Center Container -->
     <div id="command-center">
         <!-- Main Content Area with Slides -->
         <main id="slides-container" class="flex-grow relative">
-             <!-- SLIDE 1: Team Competition -->
+            <!-- SLIDE 1: Team Competition -->
             <div id="view-teams" class="view-slide active">
-                <div class="w-full flex flex-col items-center">
+                <div class="w-full h-full flex flex-col items-center">
                     <header class="flex-shrink-0 mb-6 text-center">
-                        <h1 class="text-3xl font-bold text-white fade-in-child">Competição de Times</h1>
+                        <h1 class="text-4xl font-black text-white fade-in-child tracking-tight">Competição de Times</h1>
                     </header>
-                    <div id="team-competition-content" class="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                         <!-- Team cards will be rendered here -->
+                    <div id="team-competition-content" class="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-start flex-grow">
+                        <!-- Team cards will be rendered here by JavaScript -->
                     </div>
                 </div>
             </div>
@@ -208,12 +245,13 @@
             <div id="view-leaderboard" class="view-slide">
                 <div class="w-full h-full flex flex-col items-center">
                     <header class="flex-shrink-0 mb-4 text-center">
-                        <div id="tabs-container" class="inline-flex bg-black/20 rounded-lg p-1 space-x-1 fade-in-child" style="animation-delay: 100ms;">
+                        <h1 class="text-4xl font-black text-white fade-in-child tracking-tight">Ranking dos Brokers</h1>
+                        <div id="tabs-container" class="inline-flex bg-black/20 rounded-lg p-1 space-x-1 fade-in-child mt-4" style="animation-delay: 100ms;">
                             <!-- Ranking tabs will be rendered here -->
                         </div>
                     </header>
                     <div id="leaderboard-content" class="flex-grow w-full max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
-                         <!-- Leaderboard lists will be rendered here -->
+                        <!-- Leaderboard lists will be rendered here by JavaScript -->
                     </div>
                 </div>
             </div>
@@ -222,10 +260,10 @@
             <div id="view-chart" class="view-slide">
                 <div class="w-full h-full flex flex-col items-center">
                     <header class="flex-shrink-0 mb-4 text-center">
-                        <h1 class="text-3xl font-bold text-white fade-in-child">Análise Gráfica</h1>
+                        <h1 class="text-4xl font-black text-white fade-in-child tracking-tight">Análise Gráfica</h1>
                         <p id="chart-period-title" class="text-gray-400 fade-in-child" style="animation-delay: 100ms;"></p>
                     </header>
-                    <div id="chart-content" class="flex-grow relative fade-in-child w-full max-w-5xl h-[400px]" style="animation-delay: 200ms;">
+                    <div id="chart-content" class="flex-grow relative fade-in-child w-full max-w-6xl h-[400px]" style="animation-delay: 200ms;">
                         <canvas id="mainChart"></canvas>
                     </div>
                 </div>
@@ -235,13 +273,13 @@
         <!-- Fixed Footer with Controls -->
         <footer class="flex-shrink-0">
             <div id="filter-container" class="mb-4 flex flex-wrap items-center justify-center gap-2">
-                <!-- Filtros serão inseridos aqui -->
+                <!-- Period filters will be inserted here by JavaScript -->
             </div>
             <div id="nav-dots-container" class="nav-dots"></div>
             <div class="absolute bottom-4 right-4 text-xs text-gray-500 flex items-center gap-3">
                 <span id="countdown-timer"></span>
-                <button id="refresh-btn" title="Atualizar Agora" class="p-1 rounded-full text-gray-400 hover:bg-white/10 hover:text-white transition duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                <button id="refresh-btn" title="Atualizar Agora" class="p-1.5 rounded-full text-gray-400 hover:bg-white/10 hover:text-white transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-cw"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/></svg>
                 </button>
             </div>
             <div id="progress-bar-container" class="w-full h-1 bg-white/5 absolute bottom-0 left-0 rounded-b-3xl overflow-hidden">
@@ -251,23 +289,25 @@
 
         <!-- Navigation Arrows -->
         <button id="prev-slide" class="nav-arrow">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <button id="next-slide" class="nav-arrow">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
 
-        <div id="loader" class="absolute inset-0 flex items-center justify-center bg-black/80 rounded-3xl z-30">
+        <!-- Loader overlay -->
+        <div id="loader" class="absolute inset-0 flex items-center justify-center bg-slate-950/90 rounded-3xl z-30">
             <p class="text-gray-300 text-lg">Iniciando Command Center...</p>
         </div>
     </div>
 
     <script>
     (() => {
-        // --- CONFIG ---
+        // --- GLOBAL CONFIGURATION ---
         const urlDoWebhookN8N = 'https://aldeia0225.app.n8n.cloud/webhook/a83cd7e6-b8e4-49ea-b524-9780b993c9ad';
-        const DATA_REFRESH_INTERVAL = 3600 * 1000;
-        const VIEW_ROTATION_INTERVAL = 15 * 1000;
+        const DATA_REFRESH_INTERVAL = 3600 * 1000; // 1 hour
+        const VIEW_ROTATION_INTERVAL = 15 * 1000; // 15 seconds
+
         const TEAMS = {
             'DOLLAR GODS': ['Felipe', 'Natan', 'Allison', 'João', 'Raul', 'Otavio', 'Lucas Vinicius'],
             'ELITE SQUAD': ['Luan', 'Victor', 'G. Dias', 'G. Wagner', 'Ruan', 'Arthur', 'Laurence', 'Davi']
@@ -279,7 +319,7 @@
             'Lucas Vinicius': 'Lucas'
         };
 
-        // --- STATE ---
+        // --- APPLICATION STATE ---
         let rawData = [], mainChartInstance = null;
         let dataRefreshIntervalId, countdownIntervalId, rotationTimeoutId, animationFrameId;
         let rotationStartTime, rotationRemainingTime = VIEW_ROTATION_INTERVAL;
@@ -287,6 +327,8 @@
         let previousRankings = {}, isPaused = false;
         
         const views = ['view-teams', 'view-leaderboard', 'view-chart'];
+
+        // DOM element references
         const DOM = {
             commandCenter: document.getElementById('command-center'),
             loader: document.getElementById('loader'),
@@ -304,19 +346,21 @@
             nextBtn: document.getElementById('next-slide'),
         };
         
-        // --- HELPERS ---
+        // --- HELPER FUNCTIONS ---
         const getValue = (item, ...keys) => { for (const key of keys) if (item?.[key] != null) return item[key]; return ''; };
+        
         const parseCurrency = (value) => { 
             if (typeof value === 'number') return value; 
             if (typeof value === 'string' && value.trim() !== '') {
-                // Remove any currency symbols and spaces, but keep the decimal point
                 const cleanValue = value.replace(/[^\d.-]/g, '');
                 return parseFloat(cleanValue) || 0;
             }
             return 0; 
         };
+        
         const formatCurrency = (value) => value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
         const getTeamByBroker = (brokerName) => { const shortName = BROKER_MAP[brokerName] || brokerName; for (const team in TEAMS) if (TEAMS[team].includes(shortName)) return team; return 'Sem Time'; };
+        
         const parseDate = (dateStr) => { 
             if (!dateStr || typeof dateStr !== 'string') return null; 
             // Handle YYYY-MM-DD format from webhook
@@ -329,12 +373,19 @@
             if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]); 
             return null; 
         };
+
+        function formatMonthYear(date) {
+            if (!date) return null;
+            const monthNames = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+            return `${monthNames[date.getMonth()]}. ${date.getFullYear()}`;
+        }
         
         // --- VIEW & SLIDE LOGIC ---
         function showView(index, isManual = false) {
             DOM.slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
             document.querySelectorAll('.nav-dot').forEach((dot, i) => dot.classList.toggle('active', i === index));
             currentViewIndex = index;
+
             if (isManual) {
                 clearTimeout(rotationTimeoutId);
                 cancelAnimationFrame(animationFrameId);
@@ -342,8 +393,14 @@
                 if (!isPaused) startRotation();
             }
         }
-        function nextView(isManual = false) { showView((currentViewIndex + 1) % views.length, isManual); }
-        function prevView() { showView((currentViewIndex - 1 + views.length) % views.length, true); }
+
+        function nextView(isManual = false) { 
+            showView((currentViewIndex + 1) % views.length, isManual); 
+        }
+
+        function prevView() { 
+            showView((currentViewIndex - 1 + views.length) % views.length, true); 
+        }
         
         function updateProgressBar() {
             if (isPaused) return;
@@ -356,29 +413,60 @@
         function startRotation() {
             if (isPaused) return;
             rotationStartTime = Date.now();
-            cancelAnimationFrame(animationFrameId);
-            animationFrameId = requestAnimationFrame(updateProgressBar);
+            cancelAnimationFrame(animationFrameId); 
+            animationFrameId = requestAnimationFrame(updateProgressBar); 
             rotationTimeoutId = setTimeout(() => {
-                nextView();
-                rotationRemainingTime = VIEW_ROTATION_INTERVAL;
-                startRotation();
+                nextView(); 
+                rotationRemainingTime = VIEW_ROTATION_INTERVAL; 
+                startRotation(); 
             }, rotationRemainingTime);
         }
-        function pauseRotation() { if (isPaused) return; isPaused = true; clearTimeout(rotationTimeoutId); cancelAnimationFrame(animationFrameId); const elapsedTime = Date.now() - rotationStartTime; rotationRemainingTime -= elapsedTime; }
-        function resumeRotation() { if (!isPaused) return; isPaused = false; startRotation(); }
+
+        function pauseRotation() { 
+            if (isPaused) return; 
+            isPaused = true; 
+            clearTimeout(rotationTimeoutId); 
+            cancelAnimationFrame(animationFrameId); 
+            const elapsedTime = Date.now() - rotationStartTime; 
+            rotationRemainingTime -= elapsedTime; 
+        }
+
+        function resumeRotation() { 
+            if (!isPaused) return; 
+            isPaused = false; 
+            startRotation(); 
+        }
         
         // --- DATA PROCESSING ---
+        const MIN_DATE = new Date(2025, 6, 1); // July 1, 2025
+
         function processData(data, selectedPeriod) {
-            const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); const startOfWeek = new Date(today); startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
-            return data.map(item => ({ ...item, parsedDate: parseDate(getValue(item, 'Data')), team: getTeamByBroker(getValue(item, 'Nome')) }))
-                .filter(item => {
-                    if (!item.parsedDate) return selectedPeriod === 'all'; const itemDate = new Date(item.parsedDate.getFullYear(), item.parsedDate.getMonth(), item.parsedDate.getDate());
-                    switch (selectedPeriod) {
-                        case 'all': return true; case 'today': return itemDate.getTime() === today.getTime(); case 'this_week': return itemDate >= startOfWeek && itemDate <= today;
-                        default: return `${item.parsedDate.getMonth()}_${item.parsedDate.getFullYear()}` === selectedPeriod;
-                    }
-                });
+            const now = new Date(); 
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); 
+            const startOfWeek = new Date(today); 
+            startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+
+            return data.map(item => ({
+                ...item, 
+                parsedDate: parseDate(getValue(item, 'Data')), 
+                team: getTeamByBroker(getValue(item, 'Nome'))
+            }))
+            .filter(item => {
+                if (!item.parsedDate || item.parsedDate < MIN_DATE) return false; 
+
+                const itemDate = new Date(item.parsedDate.getFullYear(), item.parsedDate.getMonth(), item.parsedDate.getDate());
+                
+                switch (selectedPeriod) {
+                    case 'all': return true; 
+                    case 'today': return itemDate.getTime() === today.getTime(); 
+                    case 'this_week': return itemDate >= startOfWeek && itemDate <= today;
+                    default: 
+                        const [month, year] = selectedPeriod.split('_').map(Number);
+                        return item.parsedDate.getMonth() === month && item.parsedDate.getFullYear() === year;
+                }
+            });
         }
+
         function calculateRankings(data) {
             const summary = data.reduce((acc, item) => { 
                 const shortName = BROKER_MAP[getValue(item, 'Nome')] || getValue(item, 'Nome'); 
@@ -389,7 +477,18 @@
                 if (ativacao === 'Ativação') acc[shortName].activationCount++; 
                 return acc; 
             }, {});
-            const allBrokers = Object.values(summary); const valueRanking = [...allBrokers].sort((a, b) => b.totalDeposito - a.totalDeposito); const activationRanking = [...allBrokers].sort((a, b) => b.activationCount - a.activationCount); const maxDeposito = Math.max(...valueRanking.map(b => b.totalDeposito), 1); const maxActivations = Math.max(...activationRanking.map(b => b.activationCount), 1); allBrokers.forEach(broker => { broker.generalScore = ((broker.totalDeposito / maxDeposito) * 0.6) + ((broker.activationCount / maxActivations) * 0.4); }); const generalRanking = allBrokers.sort((a, b) => b.generalScore - a.generalScore);
+
+            const allBrokers = Object.values(summary); 
+            const valueRanking = [...allBrokers].sort((a, b) => b.totalDeposito - a.totalDeposito); 
+            const activationRanking = [...allBrokers].sort((a, b) => b.activationCount - a.activationCount); 
+            
+            const maxDeposito = Math.max(...valueRanking.map(b => b.totalDeposito), 1); 
+            const maxActivations = Math.max(...activationRanking.map(b => b.activationCount), 1); 
+            allBrokers.forEach(broker => { 
+                broker.generalScore = ((broker.totalDeposito / maxDeposito) * 0.6) + ((broker.activationCount / maxActivations) * 0.4); 
+            }); 
+            const generalRanking = allBrokers.sort((a, b) => b.generalScore - a.generalScore);
+            
             return { valueRanking, activationRanking, generalRanking };
         }
         
@@ -401,6 +500,7 @@
             
             DOM.chartPeriodTitle.textContent = periodText;
             renderTeamCompetition(filteredData);
+            
             let rankingData = rankings.valueRanking;
             if (currentRankingType === 'activation') rankingData = rankings.activationRanking;
             else if (currentRankingType === 'general') rankingData = rankings.generalRanking;
@@ -409,7 +509,13 @@
             renderAnalysisChart(filteredData);
             updatePreviousRankings(rankings);
         }
-        function updatePreviousRankings(rankings) { Object.keys(rankings).forEach(type => { const rankMap = new Map(rankings[type].map((b, i) => [b.brokerName, i + 1])); previousRankings[type] = rankMap; }); }
+
+        function updatePreviousRankings(rankings) { 
+            Object.keys(rankings).forEach(type => { 
+                const rankMap = new Map(rankings[type].map((b, i) => [b.brokerName, i + 1])); 
+                previousRankings[type] = rankMap; 
+            }); 
+        }
 
         function renderTeamCompetition(data) {
             const kpis = data.reduce((acc, item) => {
@@ -418,41 +524,47 @@
                 if (getValue(item, 'Ativação?') === 'Ativação') acc[item.team].activationCount++;
                 return acc;
             }, {});
+
             const dg = kpis['DOLLAR GODS'] || { totalDeposito: 0, activationCount: 0 };
             const es = kpis['ELITE SQUAD'] || { totalDeposito: 0, activationCount: 0 };
             const winner = dg.totalDeposito > es.totalDeposito ? 'DOLLAR GODS' : (es.totalDeposito > dg.totalDeposito ? 'ELITE SQUAD' : null);
             
             DOM.teamContent.innerHTML = `
+                <!-- Enhanced team cards with modern styling and rounded corners -->
                 <div class="fade-in-child transition-all duration-500 ${winner === 'DOLLAR GODS' ? 'winning-team' : ''}" style="animation-delay: 200ms;">
-                    <!-- Added more rounded corners for TV-like command center look -->
-                    <div class="bg-black/20 p-8 rounded-3xl h-full border border-transparent backdrop-blur-sm">
-                        <h2 class="text-2xl font-bold text-center text-white mb-2">DOLLAR GODS</h2>
-                        <p class="text-center font-bold mt-1 h-6 ${winner === 'DOLLAR GODS' ? 'text-yellow-400' : ''}">${winner === 'DOLLAR GODS' ? '🏆 LIDERANDO' : ''}</p>
-                        <div class="mt-6 text-center space-y-6">
-                            <div class="bg-black/30 p-4 rounded-2xl border border-blue-500/20">
-                                <p class="text-4xl font-black text-blue-400">${formatCurrency(dg.totalDeposito)}</p>
-                                <p class="text-gray-400 text-sm mt-1">em Depósitos</p>
+                    <div class="bg-slate-900/50 p-8 rounded-3xl h-full border border-slate-700/50 backdrop-blur-sm flex flex-col">
+                        <h2 class="text-3xl font-black text-center text-white mb-2 flex items-center justify-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-400"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                            DOLLAR GODS
+                        </h2>
+                        <p class="text-center font-bold mt-1 h-6 ${winner === 'DOLLAR GODS' ? 'text-yellow-400' : 'text-gray-500'}">${winner === 'DOLLAR GODS' ? '🏆 LIDERANDO' : ''}</p>
+                        <div class="mt-6 text-center space-y-6 flex-grow flex flex-col justify-center">
+                            <div class="bg-black/30 p-6 rounded-2xl border border-sky-500/20">
+                                <p class="text-4xl font-black text-sky-400">${formatCurrency(dg.totalDeposito)}</p>
+                                <p class="text-gray-400 text-sm mt-2 uppercase tracking-wider">Total em Depósitos</p>
                             </div>
-                            <div class="bg-black/30 p-4 rounded-2xl border border-teal-500/20">
+                            <div class="bg-black/30 p-6 rounded-2xl border border-teal-500/20">
                                 <p class="text-4xl font-black text-teal-400">${dg.activationCount}</p>
-                                <p class="text-gray-400 text-sm mt-1">Ativações</p>
+                                <p class="text-gray-400 text-sm mt-2 uppercase tracking-wider">Ativações</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="fade-in-child transition-all duration-500 ${winner === 'ELITE SQUAD' ? 'winning-team' : ''}" style="animation-delay: 300ms;">
-                    <!-- Added more rounded corners for TV-like command center look -->
-                    <div class="bg-black/20 p-8 rounded-3xl h-full border border-transparent backdrop-blur-sm">
-                        <h2 class="text-2xl font-bold text-center text-white mb-2">ELITE SQUAD</h2>
-                        <p class="text-center font-bold mt-1 h-6 ${winner === 'ELITE SQUAD' ? 'text-yellow-400' : ''}">${winner === 'ELITE SQUAD' ? '🏆 LIDERANDO' : ''}</p>
-                        <div class="mt-6 text-center space-y-6">
-                            <div class="bg-black/30 p-4 rounded-2xl border border-blue-500/20">
-                                <p class="text-4xl font-black text-blue-400">${formatCurrency(es.totalDeposito)}</p>
-                                <p class="text-gray-400 text-sm mt-1">em Depósitos</p>
+                    <div class="bg-slate-900/50 p-8 rounded-3xl h-full border border-slate-700/50 backdrop-blur-sm flex flex-col">
+                        <h2 class="text-3xl font-black text-center text-white mb-2 flex items-center justify-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-400"><path d="M12 2L2 22h20z"/><path d="M12 17l4-8h-8l4 8z"/></svg>
+                            ELITE SQUAD
+                        </h2>
+                        <p class="text-center font-bold mt-1 h-6 ${winner === 'ELITE SQUAD' ? 'text-yellow-400' : 'text-gray-500'}">${winner === 'ELITE SQUAD' ? '🏆 LIDERANDO' : ''}</p>
+                        <div class="mt-6 text-center space-y-6 flex-grow flex flex-col justify-center">
+                            <div class="bg-black/30 p-6 rounded-2xl border border-sky-500/20">
+                                <p class="text-4xl font-black text-sky-400">${formatCurrency(es.totalDeposito)}</p>
+                                <p class="text-gray-400 text-sm mt-2 uppercase tracking-wider">Total em Depósitos</p>
                             </div>
-                            <div class="bg-black/30 p-4 rounded-2xl border border-teal-500/20">
+                            <div class="bg-black/30 p-6 rounded-2xl border border-teal-500/20">
                                 <p class="text-4xl font-black text-teal-400">${es.activationCount}</p>
-                                <p class="text-gray-400 text-sm mt-1">Ativações</p>
+                                <p class="text-gray-400 text-sm mt-2 uppercase tracking-wider">Ativações</p>
                             </div>
                         </div>
                     </div>
@@ -461,40 +573,57 @@
         }
         
         function renderSingleRanking(title, data, rankingType, isOverall = false) {
-             let contentHTML = `<div class="min-h-0 flex flex-col fade-in-child">
-                <!-- Enhanced title styling for command center look -->
-                <div class="bg-black/30 p-3 rounded-2xl mb-4 border border-gray-700/30">
-                    <h3 class="text-xl font-bold text-white text-center">${title}</h3>
-                </div>`;
-             if (data.length === 0) {
-                 contentHTML += `<div class="bg-black/20 rounded-2xl flex-grow flex items-center justify-center border border-gray-700/20"><p class="text-gray-500">Nenhum dado.</p></div></div>`;
-             } else {
-                 let listHTML = '<div class="space-y-3 overflow-y-auto flex-grow pr-2 ranking-list">';
-                 data.forEach((broker, index) => {
-                     const rank = index + 1;
-                     const prevRank = previousRankings[rankingType]?.get(broker.brokerName);
-                     let rankIndicator = '<span class="rank-stable text-lg w-6 text-center">-</span>';
-                     let highlightClass = '';
-                     if (prevRank) { 
-                         if (rank < prevRank) rankIndicator = '<span class="rank-up text-lg w-6 text-center">▲</span>'; 
-                         else if (rank > prevRank) rankIndicator = '<span class="rank-down text-lg w-6 text-center">▼</span>'; 
-                         if (rank !== prevRank) highlightClass = 'highlight-change'; 
-                     }
-                     let valueText = (rankingType === 'value') ? formatCurrency(broker.totalDeposito) : (rankingType === 'activation') ? `${broker.activationCount} Ativações` : `${broker.generalScore.toFixed(2)} pts`;
-                     const initials = broker.brokerName.split(' ').map(n => n[0]).join('').substring(0,2);
-                     const teamColorClass = isOverall ? (broker.team === 'DOLLAR GODS' ? 'avatar-team-dg' : 'avatar-team-es') : '';
-                     listHTML += `<div class="flex items-center bg-black/30 p-3 rounded-2xl transition duration-300 ${highlightClass} border border-gray-700/20 hover:border-gray-600/40">
-                         <span class="text-lg font-bold text-gray-300 w-10 text-center bg-black/40 rounded-xl py-1">${rank}º</span>
-                         <div class="w-11 h-11 rounded-2xl bg-gray-700 flex items-center justify-center font-bold text-sm text-white mx-3 border-2 avatar-ring ${rank <= 3 && isOverall ? `podium-${rank}`: ''} ${teamColorClass}">${initials}</div>
-                         <span class="font-semibold text-gray-200 flex-1 truncate">${broker.brokerName}</span>
-                         ${rankIndicator}
-                         <span class="text-sm font-semibold text-gray-300 ml-2 w-32 text-right bg-black/40 px-2 py-1 rounded-xl">${valueText}</span>
-                     </div>`;
-                 });
-                 listHTML += '</div>';
-                 contentHTML += listHTML + '</div>';
-             }
-             return contentHTML;
+            let contentHTML = `<div class="min-h-0 flex flex-col fade-in-child w-full">
+                <!-- Enhanced ranking title styling -->
+                <h3 class="text-xl font-bold text-white mb-4 text-center flex items-center justify-center gap-2">
+                    <span>${title}</span>
+                </h3>`;
+            
+            if (data.length === 0) {
+                contentHTML += `<div class="bg-black/20 rounded-xl flex-grow flex items-center justify-center"><p class="text-gray-500">Nenhum dado para este ranking.</p></div></div>`;
+            } else {
+                let listHTML = '<div class="space-y-2 overflow-y-auto flex-grow pr-2 ranking-list">';
+                data.forEach((broker, index) => {
+                    const rank = index + 1;
+                    const prevRank = previousRankings[rankingType]?.get(broker.brokerName);
+                    let rankIndicator = '<span class="rank-stable text-lg w-6 text-center">-</span>';
+                    let highlightClass = '';
+                    
+                    if (prevRank) { 
+                        if (rank < prevRank) rankIndicator = '<span class="rank-up text-lg w-6 text-center">▲</span>'; 
+                        else if (rank > prevRank) rankIndicator = '<span class="rank-down text-lg w-6 text-center">▼</span>'; 
+                        if (rank !== prevRank) highlightClass = 'highlight-change'; 
+                    }
+                    
+                    let valueText;
+                    if (rankingType === 'value') {
+                        valueText = formatCurrency(broker.totalDeposito);
+                    } else if (rankingType === 'activation') {
+                        valueText = `${broker.activationCount} Ativações`;
+                    } else if (rankingType === 'general') {
+                        valueText = `${broker.generalScore.toFixed(2)} pts`;
+                    } else {
+                        valueText = ''; 
+                    }
+                    
+                    const initials = broker.brokerName.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase(); 
+                    const teamColorClass = isOverall ? (broker.team === 'DOLLAR GODS' ? 'avatar-team-dg' : 'avatar-team-es') : '';
+                    
+                    listHTML += `
+                        <div class="flex items-center bg-black/20 p-2.5 rounded-xl transition duration-300 hover:bg-slate-700/50 ${highlightClass} ${rank <= 3 ? `podium-${rank}`: ''}">
+                            <span class="text-md font-bold text-gray-400 w-8 text-center">${rank}º</span>
+                            <div class="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center font-bold text-sm text-white mx-2 border-2 avatar-ring ${teamColorClass}">
+                                ${initials}
+                            </div>
+                            <span class="font-semibold text-gray-200 flex-1 truncate">${broker.brokerName}</span>
+                            ${rankIndicator}
+                            <span class="text-sm font-semibold text-gray-300 ml-2 w-36 text-right">${valueText}</span>
+                        </div>`;
+                });
+                listHTML += '</div>';
+                contentHTML += listHTML + '</div>';
+            }
+            return contentHTML;
         }
 
         function renderLeaderboard(rankingData, rankingType) {
@@ -507,64 +636,182 @@
                 renderSingleRanking('ELITE SQUAD', eliteSquadData, rankingType);
         }
 
-
         function renderAnalysisChart(data) {
-             const summary = data.reduce((acc, item) => {
+            const summary = data.reduce((acc, item) => {
                 const shortName = BROKER_MAP[getValue(item, 'Nome')] || getValue(item, 'Nome');
+                if(!shortName) return acc;
+
                 if(!acc[shortName]) acc[shortName] = { brokerName: shortName, totalDeposito: 0, depositoCount: 0 };
-                const depositoValor = parseCurrency(getValue(item, 'Valor Depósito'));
-                if (depositoValor > 0) { acc[shortName].totalDeposito += depositoValor; acc[shortName].depositoCount++; }
+                
+                const depositoValor = parseCurrency(getValue(item, 'Valor Depósito')); 
+                if (depositoValor > 0) { 
+                    acc[shortName].totalDeposito += depositoValor; 
+                    acc[shortName].depositoCount++; 
+                }
                 return acc;
             }, {});
+            
             const chartData = Object.values(summary).sort((a,b) => b.totalDeposito - a.totalDeposito).slice(0, 15);
 
-            const existingChart = Chart.getChart('mainChart');
-            if (existingChart) {
-                existingChart.destroy();
+            if (mainChartInstance) {
+                mainChartInstance.destroy();
             }
 
-            Chart.defaults.color = '#9ca3af';
+            Chart.defaults.color = '#9ca3af'; 
             mainChartInstance = new Chart('mainChart', {
                 type: 'bar',
                 data: { 
                     labels: chartData.map(d => d.brokerName), 
                     datasets: [
-                        { label: 'Valor Total Depositado', data: chartData.map(d => d.totalDeposito), backgroundColor: 'rgba(56, 189, 248, 0.6)', yAxisID: 'y' },
-                        { label: 'Quantidade de Depósitos', data: chartData.map(d => d.depositoCount), type: 'line', borderColor: 'rgba(20, 184, 166, 1)', tension: 0.3, yAxisID: 'y1', pointBackgroundColor: '#06b6d4', pointRadius: 4 }
-                ]},
-                options: { responsive: true, maintainAspectRatio: false,
+                        { 
+                            label: 'Valor Total Depositado', 
+                            data: chartData.map(d => d.totalDeposito), 
+                            backgroundColor: 'rgba(56, 189, 248, 0.6)', 
+                            borderColor: 'rgba(56, 189, 248, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y' 
+                        },
+                        { 
+                            label: 'Quantidade de Depósitos', 
+                            data: chartData.map(d => d.depositoCount), 
+                            type: 'line', 
+                            borderColor: 'rgba(20, 184, 166, 1)', 
+                            tension: 0.3, 
+                            yAxisID: 'y1', 
+                            pointBackgroundColor: '#06b6d4', 
+                            pointRadius: 4 
+                        }
+                    ]},
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
                     scales: { 
-                        y: { type: 'linear', display: true, position: 'left', beginAtZero: true, grid: { color: 'rgba(55, 65, 81, 0.5)' }, ticks: { callback: v => formatCurrency(v) }},
-                        y1: { type: 'linear', display: true, position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, ticks: { stepSize: 1, precision: 0 } }
+                        x: {
+                            grid: { color: 'rgba(55, 65, 81, 0.2)' }
+                        },
+                        y: { 
+                            type: 'linear', 
+                            display: true, 
+                            position: 'left', 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(55, 65, 81, 0.5)' }, 
+                            ticks: { callback: v => formatCurrency(v) }
+                        },
+                        y1: { 
+                            type: 'linear', 
+                            display: true, 
+                            position: 'right', 
+                            beginAtZero: true, 
+                            grid: { drawOnChartArea: false }, 
+                            ticks: { stepSize: 1, precision: 0 } 
+                        }
                     },
-                    plugins: { tooltip: { backgroundColor: '#1f2937', callbacks: { label: c => { let l = c.dataset.label || ''; if(l) l += ': '; if(c.dataset.yAxisID === 'y') l += formatCurrency(c.parsed.y); else l += c.parsed.y; return l; }}}}
+                    plugins: { 
+                        tooltip: { 
+                            backgroundColor: '#1f2937', 
+                            titleFont: { weight: 'bold' },
+                            callbacks: { 
+                                label: c => { 
+                                    let l = c.dataset.label || ''; 
+                                    if(l) l += ': '; 
+                                    if(c.dataset.yAxisID === 'y') l += formatCurrency(c.parsed.y); 
+                                    else l += c.parsed.y; 
+                                    return l; 
+                                }
+                            }
+                        }
+                    }
                 }
             });
         }
         
-        // --- INITIALIZATION ---
-        function initialize() {
-            DOM.loader.textContent = 'Buscando dados iniciais...';
-            fetchDataAndUpdate(true);
-            dataRefreshIntervalId = setInterval(() => fetchDataAndUpdate(false), DATA_REFRESH_INTERVAL);
+        // --- INITIALIZATION & DATA LOADING ---
+
+        async function fetchDataWithRetry(url, retries = 5, delay = 1000) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                if (retries > 0) {
+                    await new Promise(res => setTimeout(res, delay));
+                    return fetchDataWithRetry(url, retries - 1, delay * 2); 
+                } else {
+                    console.error(`Failed to fetch data from ${url} after multiple attempts:`, error);
+                    return [];
+                }
+            }
+        }
+
+        async function fetchDataAndUpdate(initialLoad = false) {
+            DOM.loader.querySelector('p').textContent = initialLoad ? 'Buscando dados iniciais...' : 'Atualizando dados...';
+            DOM.loader.classList.remove('hidden'); 
+
+            try {
+                const result = await fetchDataWithRetry(urlDoWebhookN8N);
+                const fullRawData = (Array.isArray(result) && result[0]?.json) ? result[0].json : result;
+                if (!Array.isArray(fullRawData)) throw new Error("Invalid data format");
+                
+                rawData = fullRawData.filter(item => { 
+                    const date = parseDate(getValue(item, 'Data')); 
+                    if (!date) return false; 
+                    const year = date.getFullYear(); 
+                    const month = date.getMonth(); 
+                    return year > 2025 || (year === 2025 && month >= 6); 
+                });
+                
+                if (initialLoad) {
+                    populateFilters(rawData);
+                    const augustOption = document.querySelector('[data-period="7_2025"]');
+                    currentPeriod = augustOption ? "7_2025" : "all";
+                }
+                
+                updateActiveFiltersAndTabs();
+                const rankings = calculateRankings(processData(rawData, currentPeriod));
+                if (Object.keys(previousRankings).length === 0) { 
+                    updatePreviousRankings(rankings); 
+                }
+                renderAll();
+                
+                DOM.loader.classList.add('hidden'); 
+                startRotation(); 
+                startCountdownTimer(); 
+            } catch (error) {
+                console.error("Error loading or processing data:", error);
+                DOM.loader.querySelector('p').textContent = 'Erro ao carregar dados. Verifique o console.';
+            }
         }
 
         function populateFilters(data) {
-            const months = new Set();
-            data.forEach(item => { const date = parseDate(getValue(item, 'Data')); if (date) { const my = `${date.getMonth()}_${date.getFullYear()}`; const mn = date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' }); months.add(JSON.stringify({ value: my, text: mn.charAt(0).toUpperCase() + mn.slice(1) })); } });
-            const sortedMonths = Array.from(months).map(m => JSON.parse(m)).sort((a, b) => { const [am, ay] = a.value.split('_'); const [bm, by] = b.value.split('_'); return (by - ay) || (bm - am); });
+            const months = new Map();
+            data.forEach(item => { 
+                const date = parseDate(getValue(item, 'Data')); 
+                
+                if (date && date >= MIN_DATE) {
+                    const monthYearKey = `${date.getMonth()}_${date.getFullYear()}`;
+                    if (!months.has(monthYearKey)) {
+                        months.set(monthYearKey, { value: monthYearKey, text: formatMonthYear(date), dateObj: new Date(date.getFullYear(), date.getMonth(), 1) });
+                    }
+                } 
+            });
+            
+            const sortedMonths = Array.from(months.values()).sort((a, b) => b.dateObj - a.dateObj);
             
             DOM.filterContainer.innerHTML = `
-                <button class="filter-btn px-4 py-2 rounded-xl text-sm font-semibold border border-gray-700/30" data-period="all">Geral</button>
-                <button class="filter-btn px-4 py-2 rounded-xl text-sm font-semibold border border-gray-700/30" data-period="today">Hoje</button>
-                <button class="filter-btn px-4 py-2 rounded-xl text-sm font-semibold border border-gray-700/30" data-period="this_week">Esta Semana</button>
-                ${sortedMonths.map(m => `<button class="filter-btn px-4 py-2 rounded-xl text-sm font-semibold border border-gray-700/30" data-period="${m.value}">${m.text}</button>`).join('')}
+                <button class="filter-btn px-4 py-1.5 rounded-md text-sm font-semibold" data-period="all">Geral</button>
+                <button class="filter-btn px-4 py-1.5 rounded-md text-sm font-semibold" data-period="today">Hoje</button>
+                <button class="filter-btn px-4 py-1.5 rounded-md text-sm font-semibold" data-period="this_week">Esta Semana</button>
+                ${sortedMonths.map(m => `<button class="filter-btn px-4 py-1.5 rounded-md text-sm font-semibold" data-period="${m.value}">${m.text}</button>`).join('')}
             `;
+            
             DOM.tabsContainer.innerHTML = `
-                <button data-ranking="value" class="ranking-tab px-5 py-2 text-sm font-semibold rounded-xl transition border border-gray-700/30">Depósitos</button>
-                <button data-ranking="activation" class="ranking-tab px-5 py-2 text-sm font-semibold rounded-xl transition border border-gray-700/30">Ativações</button>
-                <button data-ranking="general" class="ranking-tab px-5 py-2 text-sm font-semibold rounded-xl transition border border-gray-700/30">Geral</button>
+                <button data-ranking="value" class="ranking-tab px-5 py-2 text-sm font-semibold rounded-xl transition">Depósitos</button>
+                <button data-ranking="activation" class="ranking-tab px-5 py-2 text-sm font-semibold rounded-xl transition">Ativações</button>
+                <button data-ranking="general" class="ranking-tab px-5 py-2 text-sm font-semibold rounded-xl transition">Geral</button>
             `;
+            
             DOM.dotsContainer.innerHTML = views.map((_, i) => `<div class="nav-dot" data-index="${i}"></div>`).join('');
         }
 
@@ -573,58 +820,76 @@
             document.querySelectorAll('.ranking-tab').forEach(btn => btn.classList.toggle('filter-btn-active', btn.dataset.ranking === currentRankingType));
         }
         
-        function setupEventListeners() {
-            if (DOM.filterContainer) DOM.filterContainer.addEventListener('click', e => { if (e.target.matches('.filter-btn')) { currentPeriod = e.target.dataset.period; updateActiveFiltersAndTabs(); renderAll(); } });
-            if (DOM.tabsContainer) DOM.tabsContainer.addEventListener('click', e => { if (e.target.matches('.ranking-tab')) { currentRankingType = e.target.dataset.ranking; updateActiveFiltersAndTabs(); renderAll(); } });
-            if (DOM.dotsContainer) DOM.dotsContainer.addEventListener('click', e => { if (e.target.matches('.nav-dot')) { showView(parseInt(e.target.dataset.index), true); } });
-            if (DOM.nextBtn) DOM.nextBtn.addEventListener('click', () => nextView(true));
-            if (DOM.prevBtn) DOM.prevBtn.addEventListener('click', prevView);
-            if (DOM.refreshBtn) DOM.refreshBtn.addEventListener('click', () => fetchDataAndUpdate(false));
-            if (DOM.commandCenter) {
-                DOM.commandCenter.addEventListener('mouseenter', pauseRotation);
-                DOM.commandCenter.addEventListener('mouseleave', resumeRotation);
-            }
-        }
+        function startCountdownTimer() {
+            clearInterval(countdownIntervalId); 
+            let timeLeft = DATA_REFRESH_INTERVAL / 1000; 
+            DOM.countdownTimer.textContent = `Atualiza em ${formatTime(timeLeft)}`;
 
-        async function fetchDataAndUpdate(isInitial) {
-             DOM.countdownTimer.textContent = "Atualizando...";
-             try {
-                const response = await fetch(urlDoWebhookN8N); if (!response.ok) throw new Error("Network error");
-                const result = await response.json(); const fullRawData = (Array.isArray(result) && result[0]?.json) ? result[0].json : result;
-                if (!Array.isArray(fullRawData)) throw new Error("Invalid data format");
-                rawData = fullRawData.filter(item => { const date = parseDate(getValue(item, 'Data')); if (!date) return false; const year = date.getFullYear(); const month = date.getMonth(); return year > 2025 || (year === 2025 && month >= 6); });
-                
-                if (isInitial) {
-                    populateFilters(rawData);
-                    const augustOption = document.querySelector('[data-period="7_2025"]');
-                    currentPeriod = augustOption ? "7_2025" : "all";
+            countdownIntervalId = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownIntervalId);
+                    DOM.countdownTimer.textContent = 'Atualizando...';
+                    fetchDataAndUpdate(false);
+                } else {
+                    DOM.countdownTimer.textContent = `Atualiza em ${formatTime(timeLeft)}`;
                 }
-                updateActiveFiltersAndTabs();
-                const rankings = calculateRankings(processData(rawData, currentPeriod));
-                if (Object.keys(previousRankings).length === 0) { updatePreviousRankings(rankings); }
-                renderAll();
-             } catch(error) { console.error("Fetch failed:", error); DOM.loader.textContent = 'Erro ao carregar dados.'; return; }
-             
-             if (isInitial) { 
-                 DOM.loader.style.display = 'none'; 
-                 setupEventListeners(); 
-                 showView(0); 
-                 startRotation(); 
-             }
-             
-             clearInterval(countdownIntervalId);
-             let secondsLeft = DATA_REFRESH_INTERVAL / 1000;
-             const updateTimer = () => {
-                 secondsLeft--;
-                 if(secondsLeft < 0) secondsLeft = 0;
-                 const minutes = Math.floor(secondsLeft / 60); const seconds = secondsLeft % 60;
-                 DOM.countdownTimer.textContent = `Atualiza em ${minutes}m ${seconds.toString().padStart(2, '0')}s`;
-             };
-             updateTimer();
-             countdownIntervalId = setInterval(updateTimer, 1000);
+            }, 1000);
         }
 
-        initialize();
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function setupEventListeners() {
+            DOM.filterContainer.addEventListener('click', e => { 
+                if (e.target.matches('.filter-btn')) { 
+                    currentPeriod = e.target.dataset.period; 
+                    updateActiveFiltersAndTabs(); 
+                    renderAll(); 
+                    showView(currentViewIndex, true); 
+                } 
+            });
+
+            DOM.tabsContainer.addEventListener('click', e => { 
+                if (e.target.matches('.ranking-tab')) { 
+                    currentRankingType = e.target.dataset.ranking; 
+                    updateActiveFiltersAndTabs(); 
+                    renderAll(); 
+                } 
+            });
+
+            DOM.dotsContainer.addEventListener('click', e => { 
+                if (e.target.matches('.nav-dot')) { 
+                    showView(parseInt(e.target.dataset.index), true); 
+                } 
+            });
+
+            DOM.prevBtn.addEventListener('click', () => prevView());
+            DOM.nextBtn.addEventListener('click', () => nextView(true));
+
+            DOM.refreshBtn.addEventListener('click', () => {
+                clearTimeout(rotationTimeoutId);
+                cancelAnimationFrame(animationFrameId);
+                clearInterval(dataRefreshIntervalId);
+                clearInterval(countdownIntervalId);
+                fetchDataAndUpdate(false);
+                dataRefreshIntervalId = setInterval(() => fetchDataAndUpdate(false), DATA_REFRESH_INTERVAL);
+            });
+
+            DOM.commandCenter.addEventListener('mouseenter', pauseRotation);
+            DOM.commandCenter.addEventListener('mouseleave', resumeRotation);
+        }
+
+        function initialize() {
+            setupEventListeners(); 
+            fetchDataAndUpdate(true); 
+            dataRefreshIntervalId = setInterval(() => fetchDataAndUpdate(false), DATA_REFRESH_INTERVAL);
+        }
+
+        window.onload = initialize;
     })();
     </script>
 </body>
