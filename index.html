@@ -306,7 +306,15 @@
         
         // --- HELPERS ---
         const getValue = (item, ...keys) => { for (const key of keys) if (item?.[key] != null) return item[key]; return ''; };
-        const parseCurrency = (value) => { if (typeof value === 'number') return value; if (typeof value === 'string' && value.trim() !== '') return parseFloat(value.replace(/[^\d.,-]/g, '').replace(/\./g, '').replace(',', '.')) || 0; return 0; };
+        const parseCurrency = (value) => { 
+            if (typeof value === 'number') return value; 
+            if (typeof value === 'string' && value.trim() !== '') {
+                // Remove any currency symbols and spaces, but keep the decimal point
+                const cleanValue = value.replace(/[^\d.-]/g, '');
+                return parseFloat(cleanValue) || 0;
+            }
+            return 0; 
+        };
         const formatCurrency = (value) => value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
         const getTeamByBroker = (brokerName) => { const shortName = BROKER_MAP[brokerName] || brokerName; for (const team in TEAMS) if (TEAMS[team].includes(shortName)) return team; return 'Sem Time'; };
         const parseDate = (dateStr) => { 
